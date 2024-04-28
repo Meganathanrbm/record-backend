@@ -8,6 +8,9 @@ module.exports = {
         verificationEmail: {
             subject: "Record - Email Address Verification Request",
         },
+        resetPasswordEmail: {
+            subject: "Record - Reset Password Request",
+        },
         verificationOfEducation: {
             subject: (name, course) =>
                 `Record - Verification of Education for ${name}, ${course}`,

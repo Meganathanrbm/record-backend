@@ -41,9 +41,14 @@ module.exports = {
     VERIFICATION_EMAIL_SENT_FAILED: "Verification email sent failed!",
     EMAIL_ALREADY_VERIFIED: "Email already verified!",
     EMAIL_VERIFIED_SUCCESSFULLY: "Email verified successfully!",
+    PASSWORD_RESET_EMAIL_SENT_SUCCESSFULLY:
+        "Password reset email sent successfully!",
+    PASSWORD_RESET_EMAIL_SENT_FAILED: "Password reset email sent failed!",
+    PASSWORD_CHANGED_SUCCESSFULLY: "Password changed successfully!",
 
     // Verification messages
     VERIFICATION_TOKEN_NOT_FOUND: "Verification token not found!",
+    PASSWORD_RESET_TOKEN_NOT_FOUND: "Password reset token not found!",
 
     // Youtube messages
     PLAYLIST_ALREADY_EXISTS: "Playlist already exists!",

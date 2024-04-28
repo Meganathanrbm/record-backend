@@ -20,6 +20,13 @@ router.post(
 );
 router.post("/verify-email", authController.handleVerifyEmail);
 
+// reset password routes
+router.post("/forgot-password", authController.handleSendResetPassMail);
+router.post(
+    "/change-password/:password_reset_token",
+    authController.handleResetPass,
+);
+
 // Session routes
 router.post("/verify-session", authController.handleVerifiySession);
 

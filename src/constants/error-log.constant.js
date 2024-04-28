@@ -10,6 +10,8 @@ module.exports = {
             "🚀 ~ file: auth.controller.js ~ handleGoogleLogin ~ err",
         handleLogoutErrorLog:
             "🚀 ~ file: auth.controller.js ~ handleLogout ~ err",
+        handleResetPassEmailErrorLog:
+            "🚀 ~ file: auth.controller.js ~ handleSendVerificationEmail ~ err",
     },
     emailController: {
         handleSendEmailErrorLog:
