@@ -6,7 +6,7 @@ const skillCategorySchema = new mongoose.Schema(
             type: String,
             unique: true,
         },
-        name: {
+        categoryName: {
             type: String,
             required: true,
         },

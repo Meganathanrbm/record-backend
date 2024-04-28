@@ -8,6 +8,8 @@ const verifyUser = require("../middlewares/user.mw");
 const authRoute = require("./auth.route");
 const userRoute = require("./user.route");
 const toolsRoute = require("./tools.route");
+const skillRoute = require("./skill.route");
+const skillCategoryRoute = require("./skill-category.route");
 
 // Non authorization routes
 router.use("/auth", authRoute);
@@ -15,7 +17,7 @@ router.use("/auth", authRoute);
 // Authorization routes
 router.use("/user", verifyUser, userRoute);
 router.use("/tools", verifyUser, toolsRoute);
-// router.use("/skill", verifyUser, skillRoute);
-// router.use("/skill-category", verifyUser, skillCategoryRoute);
+router.use("/skill", verifyUser, skillRoute);
+router.use("/skill-category", verifyUser, skillCategoryRoute);
 
 module.exports = router;

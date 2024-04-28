@@ -16,7 +16,7 @@ const Skill = require("../models/skill.model");
 exports.handleCreateSkill = async (req, res) => {
     try {
         const skillValidation = Joi.object({
-            name: Joi.string().required(),
+            skillName: Joi.string().required(),
             skillCategoryId: Joi.string().required(),
             imageUrl: Joi.string().required(),
         });
@@ -30,13 +30,13 @@ exports.handleCreateSkill = async (req, res) => {
                 message: error.details[0].message.replace(/"/g, ""),
             });
         } else {
-            const { name } = req.body;
-            const transfromedSkillName = name
+            const { skillName } = req.body;
+            const transfromedSkillName = skillName
                 .toLowerCase()
                 .trim()
                 .replace(/\s+/g, " ");
             const isSkillExists = await Skill.exists({
-                name: transfromedSkillName,
+                skillName: transfromedSkillName,
             });
 
             if (isSkillExists) {
@@ -47,10 +47,10 @@ exports.handleCreateSkill = async (req, res) => {
                 });
             } else {
                 const skillId = generateUUID();
-                const skillCategory = await skillModel.create({
+                const skillCategory = await Skill.create({
                     ...req.body,
                     skillId,
-                    name: transfromedSkillName,
+                    skillName: transfromedSkillName,
                 });
                 return res.status(HttpStatusCode.Created).json({
                     status: HttpStatusConstant.CREATED,
@@ -73,6 +73,50 @@ exports.handleCreateSkill = async (req, res) => {
 
 exports.handleGetAllSkills = async (req, res) => {
     try {
+        const { searchTerm = "" } = req.query;
+
+        const skillResponse = await Skill.aggregate([
+            {
+                $match: {
+                    skillName: { $regex: searchTerm, $options: "i" },
+                },
+            },
+            {
+                $lookup: {
+                    from: "skillcategories",
+                    localField: "skillCategoryId",
+                    foreignField: "skillCategoryId",
+                    as: "skills",
+                },
+            },
+            {
+                $unwind: "$skills",
+            },
+            {
+                $group: {
+                    _id: "$skills.categoryName",
+                    skills: {
+                        $push: {
+                            _id: "$_id",
+                            skillId: "$skillId",
+                            skillName: "$skillName",
+                            skillCategoryId: "$skillCategoryId",
+                            categoryName: "$skills.categoryName",
+                            imageUrl: "$imageUrl",
+                            createdAt: "$createdAt",
+                            updatedAt: "$updatedAt",
+                            __v: "$__v",
+                        },
+                    },
+                },
+            },
+        ]);
+
+        return res.status(HttpStatusCode.Ok).json({
+            status: HttpStatusConstant.OK,
+            code: HttpStatusCode.Ok,
+            data: skillResponse,
+        });
     } catch (error) {
         console.log(
             ErrorLogConstant.skillController.handleGetAllSkillsErrorLog,
