@@ -154,7 +154,7 @@ exports.handleAddEducation = async (req, res) => {
             endMonthYear,
             grade,
             activitiesRoles,
-            verifierEmail,
+            skipVerification,
         } = req.body;
 
         // Do Joi Validation
@@ -180,41 +180,53 @@ exports.handleAddEducation = async (req, res) => {
             endMonthYear,
             grade,
             activitiesRoles,
-            verificationId: generatedVerificationId,
+            verificationId: skipVerification ? null : generatedVerificationId,
         };
 
         userProfile.educations.push(education);
         await userProfile.save();
 
-        await Education_Verification.create({
-            userId,
-            verificationId: generatedVerificationId,
-            verifierEmail: verifierEmail,
-        });
+        if (!skipVerification) {
+            const { verifierEmail } = req.body;
 
-        const isEmailSend = await handleSendEmail({
-            toAddresses: [verifierEmail],
-            source: CommonConstant.email.source.tech_team,
-            subject: CommonConstant.email.verificationOfEducation.subject(
-                userProfile.username,
-                degree,
-            ),
-            htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the education details <a href="${process.env.EMAIL_BASE_URL}/verify-education/${generatedVerificationId}">Verfiy Education</a></p>`,
-        });
+            await Education_Verification.create({
+                userId,
+                verificationId: generatedVerificationId,
+                verifierEmail: verifierEmail,
+            });
 
-        if (isEmailSend) {
+            const isEmailSend = await handleSendEmail({
+                toAddresses: [verifierEmail],
+                source: CommonConstant.email.source.tech_team,
+                subject: CommonConstant.email.verificationOfEducation.subject(
+                    userProfile.username,
+                    degree,
+                ),
+                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the education details <a href="${process.env.EMAIL_BASE_URL}/verify-education/${generatedVerificationId}">Verfiy Education</a></p>`,
+            });
+
+            if (isEmailSend) {
+                return res.status(HttpStatusCode.Ok).json({
+                    status: HttpStatusConstant.OK,
+                    code: HttpStatusCode.Ok,
+                    message:
+                        ResponseMessageConstant.VERIFICATION_EMAIL_SENT_SUCCESSFULLY,
+                    data: userProfile,
+                });
+            } else {
+                return res.status(HttpStatusCode.InternalServerError).json({
+                    status: HttpStatusConstant.ERROR,
+                    code: HttpStatusCode.InternalServerError,
+                    message:
+                        ResponseMessageConstant.VERIFICATION_EMAIL_SENT_FAILED,
+                });
+            }
+        } else {
             return res.status(HttpStatusCode.Ok).json({
                 status: HttpStatusConstant.OK,
                 code: HttpStatusCode.Ok,
-                message:
-                    ResponseMessageConstant.VERIFICATION_EMAIL_SENT_SUCCESSFULLY,
+                message: ResponseMessageConstant.EDUCATION_ADDED_SUCCESSFULLY,
                 data: userProfile,
-            });
-        } else {
-            return res.status(HttpStatusCode.InternalServerError).json({
-                status: HttpStatusConstant.ERROR,
-                code: HttpStatusCode.InternalServerError,
-                message: ResponseMessageConstant.VERIFICATION_EMAIL_SENT_FAILED,
             });
         }
     } catch (error) {

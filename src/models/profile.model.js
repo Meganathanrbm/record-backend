@@ -29,6 +29,7 @@ const profileSchema = new mongoose.Schema(
                 endMonthYear: { type: String, required: false },
                 grade: { type: String, required: false },
                 activitiesRoles: { type: String, required: false },
+                verified: { type: Boolean, default: false },
                 verificationId: { type: String, required: false },
             },
         ],
