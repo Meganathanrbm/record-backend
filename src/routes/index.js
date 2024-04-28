@@ -15,7 +15,7 @@ router.use("/auth", authRoute);
 // Authorization routes
 router.use("/user", verifyUser, userRoute);
 router.use("/tools", verifyUser, toolsRoute);
-router.use("/skill", verifyUser, skillRoute);
-router.use("/skill-category", verifyUser, skillCategoryRoute);
+// router.use("/skill", verifyUser, skillRoute);
+// router.use("/skill-category", verifyUser, skillCategoryRoute);
 
 module.exports = router;

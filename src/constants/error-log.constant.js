@@ -53,4 +53,12 @@ module.exports = {
         handleUpdateSkillCategoryErrorLog:
             "🚀 ~ file: skill-category.controller.js ~ handleUpdateSkillCategory ~ err",
     },
+    profileController: {
+        handleUpdateBasicProfileErrorLog:
+            "🚀 ~ file: profile.controller.js ~ handleUpdateBasicProfile ~ err",
+        handleAddEducationErrorLog:
+            "🚀 ~ file: profile.controller.js ~ handleAddEducation ~ err",
+        handleUpdateEducationErrorLog:
+            "🚀 ~ file: profile.controller.js ~ handleUpdateEducation ~ err",
+    },
 };

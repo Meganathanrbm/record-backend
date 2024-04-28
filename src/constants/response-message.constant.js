@@ -62,4 +62,9 @@ module.exports = {
     SKILL_CATEGORY_NOT_FOUND: "Skill category not found!",
     SKILL_CATEGORY_ID_REQUIRED: "Skill category id is required!",
     SKILL_CATEGORY_UPDATED_SUCCESSFULLY: "Skill category updated successfully!",
+
+    // Profile Messages
+    PROFILE_UPDATED_SUCCESSFULLY: "Profile updated successfully!",
+    EDUCATION_NOT_FOUND: "Education not found!",
+    EDUCATION_UPDATED_SUCCESSFULLY: "Education updated successfully!",
 };
