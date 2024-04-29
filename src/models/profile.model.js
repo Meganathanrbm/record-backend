@@ -33,6 +33,29 @@ const profileSchema = new mongoose.Schema(
                 verificationId: { type: String, required: false },
             },
         ],
+        workexperiences: [
+            {
+                role: { type: String, required: false },
+                companyName: { type: String, required: false },
+                employeeId: { type: String, required: false },
+                workType: { type: String, required: false },
+                location: { type: String, required: false },
+                locationType: { type: String, required: false },
+                startDate: { type: Date, required: false },
+                endDate: { type: Date, required: false },
+                description: { type: Boolean, default: false },
+                verified: { type: Boolean, default: false },
+                verificationId: { type: String, required: false },
+                skills: [
+                    {
+                        name: { type: String, required: true },
+                        verified: { type: Boolean, default: false },
+                        endorsedBy: String,
+                        endorsedAt: Date,
+                    },
+                ],
+            },
+        ],
     },
     { timestamps: true },
 );

@@ -3,7 +3,7 @@ const Joi = require("joi");
 // Importing models
 const Profile = require("../models/profile.model");
 const User = require("../models/user.model");
-const Education_Verification = require("../models/education_verification.model");
+const Profile_Verification = require("../models/profile_verification.model");
 
 // Importing Constants
 const HttpStatusConstant = require("../constants/http-message.constant");
@@ -192,10 +192,11 @@ exports.handleAddEducation = async (req, res) => {
         await userProfile.save();
 
         if (!skipVerification) {
-            await Education_Verification.create({
+            await Profile_Verification.create({
                 userId,
                 verificationId: generatedVerificationId,
                 verifierEmail: verifierEmail,
+                verificationType: "education",
             });
 
             const isEmailSend = await handleSendEmail({
@@ -271,6 +272,8 @@ exports.handleUpdateEducation = async (req, res) => {
             });
         }
 
+        const verificationId = educationToUpdate.verificationId;
+
         const {
             degree,
             institution,
@@ -284,7 +287,7 @@ exports.handleUpdateEducation = async (req, res) => {
         } = req.body;
 
         let skipVerification = false;
-        if (!verifierEmail) {
+        if (!verifierEmail && !verificationId) {
             skipVerification = true;
         }
 
@@ -298,21 +301,32 @@ exports.handleUpdateEducation = async (req, res) => {
         educationToUpdate.endMonthYear = endMonthYear;
         educationToUpdate.grade = grade;
         educationToUpdate.activitiesRoles = activitiesRoles;
-        educationToUpdate.verificationId = skipVerification
-            ? null
-            : generatedVerificationId;
+        if (!skipVerification && !verificationId) {
+            educationToUpdate.verificationId = generatedVerificationId;
+        }
 
         await userProfile.save();
 
         if (!skipVerification) {
-            await Education_Verification.create({
-                userId,
-                verificationId: generatedVerificationId,
-                verifierEmail: verifierEmail,
-            });
+            let toAddressEmail;
 
+            if (!verificationId) {
+                toAddressEmail = verifierEmail;
+                await Profile_Verification.create({
+                    userId,
+                    verificationId: generatedVerificationId,
+                    verifierEmail: verifierEmail,
+                    verificationType: "education",
+                });
+            } else {
+                const profileVerificationResponse =
+                    await Profile_Verification.findOne({ verificationId });
+                // handle if profile verification response not found
+                toAddressEmail = profileVerificationResponse.verifierEmail;
+            }
+            console.log(toAddressEmail);
             const isEmailSend = await handleSendEmail({
-                toAddresses: [verifierEmail],
+                toAddresses: [toAddressEmail],
                 source: CommonConstant.email.source.tech_team,
                 subject: CommonConstant.email.verificationOfEducation.subject(
                     userProfile.username,
@@ -348,6 +362,108 @@ exports.handleUpdateEducation = async (req, res) => {
     } catch (error) {
         console.log(
             ErrorLogConstant.profileController.handleUpdateEducationErrorLog,
+            error.message,
+        );
+        res.status(HttpStatusCode.InternalServerError).json({
+            status: HttpStatusConstant.ERROR,
+            code: HttpStatusCode.InternalServerError,
+        });
+    }
+};
+
+exports.handleAddWorkExperience = async (req, res) => {
+    try {
+        const {
+            role,
+            companyName,
+            employeeId,
+            workType,
+            location,
+            locationType,
+            startDate,
+            endDate,
+            description,
+        } = req.body;
+
+        // Do Joi Validation
+
+        let skipVerification = false;
+        if (!verifierEmail) {
+            skipVerification = true;
+        }
+
+        const { userId } = req.userSession;
+
+        const userProfile = await Profile.findOne({ userId });
+
+        if (!userProfile) {
+            return res.status(HttpStatusCode.NotFound).json({
+                status: HttpStatusConstant.NOT_FOUND,
+                code: HttpStatusCode.NotFound,
+                message: ResponseMessageConstant.USER_NOT_FOUND,
+            });
+        }
+        const generatedVerificationId = generateUUID();
+        const education = {
+            degree,
+            institution,
+            branch,
+            rollNumber,
+            startMonthYear,
+            endMonthYear,
+            grade,
+            activitiesRoles,
+            verificationId: skipVerification ? null : generatedVerificationId,
+        };
+
+        userProfile.educations.push(education);
+        await userProfile.save();
+
+        if (!skipVerification) {
+            await Profile_Verification.create({
+                userId,
+                verificationId: generatedVerificationId,
+                verifierEmail: verifierEmail,
+                verificationType: "education",
+            });
+
+            const isEmailSend = await handleSendEmail({
+                toAddresses: [verifierEmail],
+                source: CommonConstant.email.source.tech_team,
+                subject: CommonConstant.email.verificationOfEducation.subject(
+                    userProfile.username,
+                    degree,
+                ),
+                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the education details <a href="${process.env.EMAIL_BASE_URL}/verify-education/${generatedVerificationId}">Verfiy Education</a></p>`,
+            });
+
+            if (isEmailSend) {
+                return res.status(HttpStatusCode.Ok).json({
+                    status: HttpStatusConstant.OK,
+                    code: HttpStatusCode.Ok,
+                    message:
+                        ResponseMessageConstant.VERIFICATION_EMAIL_SENT_SUCCESSFULLY,
+                    data: userProfile,
+                });
+            } else {
+                return res.status(HttpStatusCode.InternalServerError).json({
+                    status: HttpStatusConstant.ERROR,
+                    code: HttpStatusCode.InternalServerError,
+                    message:
+                        ResponseMessageConstant.VERIFICATION_EMAIL_SENT_FAILED,
+                });
+            }
+        } else {
+            return res.status(HttpStatusCode.Ok).json({
+                status: HttpStatusConstant.OK,
+                code: HttpStatusCode.Ok,
+                message: ResponseMessageConstant.EDUCATION_ADDED_SUCCESSFULLY,
+                data: userProfile,
+            });
+        }
+    } catch (error) {
+        console.log(
+            ErrorLogConstant.profileController.handleAddEducationErrorLog,
             error.message,
         );
         res.status(HttpStatusCode.InternalServerError).json({
