@@ -59,8 +59,16 @@ module.exports = {
         handleUpdateBasicProfileErrorLog:
             "🚀 ~ file: profile.controller.js ~ handleUpdateBasicProfile ~ err",
         handleAddEducationErrorLog:
-            "🚀 ~ file: profile.controller.js ~ handleAddEducation ~ err",
+            "🚀 ~ file: education.controller.js ~ handleAddEducation ~ err",
         handleUpdateEducationErrorLog:
-            "🚀 ~ file: profile.controller.js ~ handleUpdateEducation ~ err",
+            "🚀 ~ file: education.controller.js ~ handleUpdateEducation ~ err",
+        handleAddWorkExperienceErrorLog:
+            "🚀 ~ file: work-experience.js ~ handleAddWorkExperience ~ err",
+        handleUpdateWorkExperienceErrorLog:
+            "🚀 ~ file: work-experience.controller.js ~ handleUpdateWorkExperience ~ err",
+        handleAddLicenseCertificationErrorLog:
+            "🚀 ~ file: license-certification.controller.js ~ handleAddLicenseCertification ~ err",
+        handleUpdateLicenseCertificationErrorLog:
+            "🚀 ~ file: license-certification.controller.js ~ handleUpdateLicenseCertification ~ err",
     },
 };

@@ -19,5 +19,9 @@ module.exports = {
             subject: (name, role, employeeId) =>
                 `Record: Verification of employment to ${name}, ${role} (${employeeId})`,
         },
+        verificationOfLicenseCertification: {
+            subject: (name, certificationName, credentialId) =>
+                `Record: Verification of Licenses and Certification of ${name}, ${certificationName} (${credentialId})`,
+        },
     },
 };

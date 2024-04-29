@@ -77,4 +77,9 @@ module.exports = {
     WORK_EXPERIENCE_NOT_FOUND: "Work Experience not found!",
     WORK_EXPERIENCE_UPDATED_SUCCESSFULLY:
         "Work Experience updated successfully!",
+    LICENSE_CERTIFICATION_ADDED_SUCCESSFULLY:
+        "License & Certification added successfully!",
+    LICENSE_CERTIFICATION_NOT_FOUND: "License & Certification not found!",
+    LICENSE_CERTIFICATION_UPDATED_SUCCESSFULLY:
+        "License & Certification updated successfully!",
 };
