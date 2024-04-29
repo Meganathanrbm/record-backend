@@ -73,4 +73,8 @@ module.exports = {
     EDUCATION_ADDED_SUCCESSFULLY: "Education added successfully!",
     EDUCATION_NOT_FOUND: "Education not found!",
     EDUCATION_UPDATED_SUCCESSFULLY: "Education updated successfully!",
+    WORK_EXPERIENCE_ADDED_SUCCESSFULLY: "Work Experience added successfully!",
+    WORK_EXPERIENCE_NOT_FOUND: "Work Experience not found!",
+    WORK_EXPERIENCE_UPDATED_SUCCESSFULLY:
+        "Work Experience updated successfully!",
 };

@@ -33,7 +33,7 @@ const profileSchema = new mongoose.Schema(
                 verificationId: { type: String, required: false },
             },
         ],
-        workexperiences: [
+        workExperiences: [
             {
                 role: { type: String, required: false },
                 companyName: { type: String, required: false },
@@ -43,7 +43,7 @@ const profileSchema = new mongoose.Schema(
                 locationType: { type: String, required: false },
                 startDate: { type: Date, required: false },
                 endDate: { type: Date, required: false },
-                description: { type: Boolean, default: false },
+                description: { type: String, default: false },
                 verified: { type: Boolean, default: false },
                 verificationId: { type: String, required: false },
                 skills: [

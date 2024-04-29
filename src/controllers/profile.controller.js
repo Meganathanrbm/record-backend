@@ -383,6 +383,8 @@ exports.handleAddWorkExperience = async (req, res) => {
             startDate,
             endDate,
             description,
+            skills,
+            verifierEmail,
         } = req.body;
 
         // Do Joi Validation
@@ -403,20 +405,23 @@ exports.handleAddWorkExperience = async (req, res) => {
                 message: ResponseMessageConstant.USER_NOT_FOUND,
             });
         }
+
         const generatedVerificationId = generateUUID();
-        const education = {
-            degree,
-            institution,
-            branch,
-            rollNumber,
-            startMonthYear,
-            endMonthYear,
-            grade,
-            activitiesRoles,
+        const workExperience = {
+            role,
+            companyName,
+            employeeId,
+            workType,
+            location,
+            locationType,
+            startDate,
+            endDate,
+            description,
+            skills,
             verificationId: skipVerification ? null : generatedVerificationId,
         };
 
-        userProfile.educations.push(education);
+        userProfile.workExperiences.push(workExperience);
         await userProfile.save();
 
         if (!skipVerification) {
@@ -424,17 +429,19 @@ exports.handleAddWorkExperience = async (req, res) => {
                 userId,
                 verificationId: generatedVerificationId,
                 verifierEmail: verifierEmail,
-                verificationType: "education",
+                verificationType: "work experience",
             });
 
             const isEmailSend = await handleSendEmail({
                 toAddresses: [verifierEmail],
                 source: CommonConstant.email.source.tech_team,
-                subject: CommonConstant.email.verificationOfEducation.subject(
-                    userProfile.username,
-                    degree,
-                ),
-                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the education details <a href="${process.env.EMAIL_BASE_URL}/verify-education/${generatedVerificationId}">Verfiy Education</a></p>`,
+                subject:
+                    CommonConstant.email.verificationOfWorkExperience.subject(
+                        userProfile.username,
+                        role,
+                        employeeId,
+                    ),
+                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the work experience details <a href="${process.env.EMAIL_BASE_URL}/verify-work-experience/${generatedVerificationId}">Verfiy Work Experience</a></p>`,
             });
 
             if (isEmailSend) {
@@ -457,7 +464,8 @@ exports.handleAddWorkExperience = async (req, res) => {
             return res.status(HttpStatusCode.Ok).json({
                 status: HttpStatusConstant.OK,
                 code: HttpStatusCode.Ok,
-                message: ResponseMessageConstant.EDUCATION_ADDED_SUCCESSFULLY,
+                message:
+                    ResponseMessageConstant.WORK_EXPERIENCE_ADDED_SUCCESSFULLY,
                 data: userProfile,
             });
         }
