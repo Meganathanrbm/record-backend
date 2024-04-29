@@ -6,6 +6,7 @@ const profileController = require("../controllers/profile.controller");
 const educationController = require("../controllers/education.controller");
 const workExperienceController = require("../controllers/work-experience.controller");
 const licenseCertificationController = require("../controllers/license-certification.controller");
+const projectController = require("../controllers/project.controller");
 
 router.get("/:userId", profileController.handleGetUserProfileInfo);
 
@@ -42,5 +43,11 @@ router.put(
     "/license-certification/:licenseCertificationId",
     licenseCertificationController.handleUpdateLicenseCertification,
 );
+
+// License Certification routes
+
+router.post("/project", projectController.handleAddProject);
+
+router.put("/project/:projectId", projectController.handleUpdateProject);
 
 module.exports = router;

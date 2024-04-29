@@ -82,4 +82,7 @@ module.exports = {
     LICENSE_CERTIFICATION_NOT_FOUND: "License & Certification not found!",
     LICENSE_CERTIFICATION_UPDATED_SUCCESSFULLY:
         "License & Certification updated successfully!",
+    PROJECT_ADDED_SUCCESSFULLY: "Project added successfully!",
+    PROJECT_NOT_FOUND: "Project not found!",
+    PROJECT_UPDATED_SUCCESSFULLY: "Project updated successfully!",
 };

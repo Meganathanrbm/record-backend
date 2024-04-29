@@ -77,6 +77,27 @@ const profileSchema = new mongoose.Schema(
                 ],
             },
         ],
+        projects: [
+            {
+                projectName: { type: String, required: true },
+                associatedWith: { type: String, required: true },
+                projectType: { type: String, required: true },
+                startDate: { type: Date, required: true },
+                endDate: { type: Date, required: true },
+                projectLink: { type: String, required: true },
+                description: { type: String, required: true },
+                verified: { type: Boolean, default: false },
+                verificationId: { type: String, required: false },
+                skills: [
+                    {
+                        name: { type: String, required: true },
+                        verified: { type: Boolean, default: false },
+                        endorsedBy: String,
+                        endorsedAt: Date,
+                    },
+                ],
+            },
+        ],
     },
     { timestamps: true },
 );

@@ -17,17 +17,18 @@ const generateUUID = require("../helpers/uuid.helper");
 
 // Importing Controllers
 const handleSendEmail = require("./email.controller");
+const { IoT1ClickProjects } = require("aws-sdk");
 
-exports.handleAddLicenseCertification = async (req, res) => {
+exports.handleAddProject = async (req, res) => {
     try {
         const {
-            certificationName,
-            organization,
-            doneVia,
-            issuedDate,
-            expirationDate,
-            credentialId,
-            credentialURL,
+            projectName,
+            associatedWith,
+            projectType,
+            startDate,
+            endDate,
+            projectLink,
+            description,
             skills,
             verifierEmail,
         } = req.body;
@@ -52,19 +53,20 @@ exports.handleAddLicenseCertification = async (req, res) => {
         }
 
         const generatedVerificationId = generateUUID();
-        const licenseCertification = {
-            certificationName,
-            organization,
-            doneVia,
-            issuedDate,
-            expirationDate,
-            credentialId,
-            credentialURL,
+        const project = {
+            projectName,
+            associatedWith,
+            projectType,
+            startDate,
+            endDate,
+            projectLink,
+            description,
             skills,
+            verifierEmail,
             verificationId: skipVerification ? null : generatedVerificationId,
         };
 
-        userProfile.licenses_certifications.push(licenseCertification);
+        userProfile.projects.push(project);
         await userProfile.save();
 
         if (!skipVerification) {
@@ -72,19 +74,18 @@ exports.handleAddLicenseCertification = async (req, res) => {
                 userId,
                 verificationId: generatedVerificationId,
                 verifierEmail: verifierEmail,
-                verificationType: "license certification",
+                verificationType: "project",
             });
 
             const isEmailSend = await handleSendEmail({
                 toAddresses: [verifierEmail],
                 source: CommonConstant.email.source.tech_team,
-                subject:
-                    CommonConstant.email.verificationOfLicenseCertification.subject(
-                        userProfile.username,
-                        certificationName,
-                        credentialId,
-                    ),
-                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the License & Credential details <a href="${process.env.EMAIL_BASE_URL}/verify-license-certificate/${generatedVerificationId}">Verfiy Licenses & Credentials</a></p>`,
+                subject: CommonConstant.email.verificationOfProject.subject(
+                    userProfile.username,
+                    projectName,
+                    projectLink,
+                ),
+                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the Project details <a href="${process.env.EMAIL_BASE_URL}/verify-project/${generatedVerificationId}">Verfiy Project</a></p>`,
             });
 
             if (isEmailSend) {
@@ -107,15 +108,13 @@ exports.handleAddLicenseCertification = async (req, res) => {
             return res.status(HttpStatusCode.Ok).json({
                 status: HttpStatusConstant.OK,
                 code: HttpStatusCode.Ok,
-                message:
-                    ResponseMessageConstant.LICENSE_CERTIFICATION_ADDED_SUCCESSFULLY,
+                message: ResponseMessageConstant.PROJECT_ADDED_SUCCESSFULLY,
                 data: userProfile,
             });
         }
     } catch (error) {
         console.log(
-            ErrorLogConstant.profileController
-                .handleAddLicenseCertificationErrorLog,
+            ErrorLogConstant.profileController.handleAddProjectErrorLog,
             error.message,
         );
         res.status(HttpStatusCode.InternalServerError).json({
@@ -125,10 +124,10 @@ exports.handleAddLicenseCertification = async (req, res) => {
     }
 };
 
-exports.handleUpdateLicenseCertification = async (req, res) => {
+exports.handleUpdateProject = async (req, res) => {
     try {
         const { userId } = req.userSession;
-        const { licenseCertificationId } = req.params;
+        const { projectId } = req.params;
 
         const userProfile = await Profile.findOne({ userId });
 
@@ -140,30 +139,28 @@ exports.handleUpdateLicenseCertification = async (req, res) => {
             });
         }
 
-        const licenseCertificationToUpdate =
-            userProfile.licenses_certifications.find(
-                (licert) => licert._id.toString() === licenseCertificationId,
-            );
+        const projectToUpdate = userProfile.projects.find(
+            (proj) => proj._id.toString() === projectId,
+        );
 
-        if (!licenseCertificationToUpdate) {
+        if (!projectToUpdate) {
             return res.status(HttpStatusCode.NotFound).json({
                 status: HttpStatusConstant.NOT_FOUND,
                 code: HttpStatusCode.NotFound,
-                message:
-                    ResponseMessageConstant.LICENSE_CERTIFICATION_NOT_FOUND,
+                message: ResponseMessageConstant.PROJECT_NOT_FOUND,
             });
         }
 
-        const verificationId = licenseCertificationToUpdate.verificationId;
+        const verificationId = projectToUpdate.verificationId;
 
         const {
-            certificationName,
-            organization,
-            doneVia,
-            issuedDate,
-            expirationDate,
-            credentialId,
-            credentialURL,
+            projectName,
+            associatedWith,
+            projectType,
+            startDate,
+            endDate,
+            projectLink,
+            description,
             skills,
             verifierEmail,
         } = req.body;
@@ -175,17 +172,17 @@ exports.handleUpdateLicenseCertification = async (req, res) => {
 
         const generatedVerificationId = generateUUID();
 
-        licenseCertificationToUpdate.certificationName = certificationName;
-        licenseCertificationToUpdate.organization = organization;
-        licenseCertificationToUpdate.doneVia = doneVia;
-        licenseCertificationToUpdate.issuedDate = issuedDate;
-        licenseCertificationToUpdate.expirationDate = expirationDate;
-        licenseCertificationToUpdate.credentialId = credentialId;
-        licenseCertificationToUpdate.credentialURL = credentialURL;
-        licenseCertificationToUpdate.skills = skills;
+        projectToUpdate.projectName = projectName;
+        projectToUpdate.associatedWith = associatedWith;
+        projectToUpdate.projectType = projectType;
+        projectToUpdate.projectType = projectType;
+        projectToUpdate.startDate = startDate;
+        projectToUpdate.endDate = endDate;
+        projectToUpdate.projectLink = projectLink;
+        projectToUpdate.description = description;
+        projectToUpdate.skills = skills;
         if (!skipVerification && !verificationId) {
-            licenseCertificationToUpdate.verificationId =
-                generatedVerificationId;
+            projectToUpdate.verificationId = generatedVerificationId;
         }
 
         await userProfile.save();
@@ -199,7 +196,7 @@ exports.handleUpdateLicenseCertification = async (req, res) => {
                     userId,
                     verificationId: generatedVerificationId,
                     verifierEmail: verifierEmail,
-                    verificationType: "license certification",
+                    verificationType: "project",
                 });
             } else {
                 const profileVerificationResponse =
@@ -211,13 +208,12 @@ exports.handleUpdateLicenseCertification = async (req, res) => {
             const isEmailSend = await handleSendEmail({
                 toAddresses: [toAddressEmail],
                 source: CommonConstant.email.source.tech_team,
-                subject:
-                    CommonConstant.email.verificationOfLicenseCertification.subject(
-                        userProfile.username,
-                        certificationName,
-                        credentialId,
-                    ),
-                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the License & Credential details <a href="${process.env.EMAIL_BASE_URL}/verify-license-certificate/${generatedVerificationId}">Verfiy Licenses & Credentials</a></p>`,
+                subject: CommonConstant.email.verificationOfProject.subject(
+                    userProfile.username,
+                    projectName,
+                    projectLink,
+                ),
+                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the Project details <a href="${process.env.EMAIL_BASE_URL}/verify-project/${generatedVerificationId}">Verfiy Project</a></p>`,
             });
 
             if (isEmailSend) {
@@ -240,15 +236,13 @@ exports.handleUpdateLicenseCertification = async (req, res) => {
             res.status(HttpStatusCode.Ok).json({
                 status: HttpStatusConstant.SUCCESS,
                 code: HttpStatusCode.Ok,
-                message:
-                    ResponseMessageConstant.LICENSE_CERTIFICATION_UPDATED_SUCCESSFULLY,
+                message: ResponseMessageConstant.PROJECT_ADDED_SUCCESSFULLY,
                 profile: userProfile,
             });
         }
     } catch (error) {
         console.log(
-            ErrorLogConstant.profileController
-                .handleUpdateLicenseCertificationErrorLog,
+            ErrorLogConstant.profileController.handleUpdateProjectErrorLog,
             error.message,
         );
         res.status(HttpStatusCode.InternalServerError).json({

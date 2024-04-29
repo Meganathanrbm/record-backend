@@ -70,5 +70,9 @@ module.exports = {
             "🚀 ~ file: license-certification.controller.js ~ handleAddLicenseCertification ~ err",
         handleUpdateLicenseCertificationErrorLog:
             "🚀 ~ file: license-certification.controller.js ~ handleUpdateLicenseCertification ~ err",
+        handleAddProjectErrorLog:
+            "🚀 ~ file: project.controller.js ~ handleAddProject ~ err",
+        handleUpdateProjectErrorLog:
+            "🚀 ~ file: project.controller.js ~ handleUpdateProject ~ err",
     },
 };

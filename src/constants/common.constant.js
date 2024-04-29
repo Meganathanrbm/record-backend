@@ -23,5 +23,9 @@ module.exports = {
             subject: (name, certificationName, credentialId) =>
                 `Record: Verification of Licenses and Certification of ${name}, ${certificationName} (${credentialId})`,
         },
+        verificationOfProject: {
+            subject: (name, projectName, projectLink) =>
+                `Record: Verification of Project of ${name}, ${projectName} (${projectLink})`,
+        },
     },
 };

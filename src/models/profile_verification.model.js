@@ -8,7 +8,12 @@ const profileVerificationSchema = new mongoose.Schema(
         verificationType: {
             type: String,
             required: true,
-            enum: ["education", "work experience", "license certification"],
+            enum: [
+                "education",
+                "work experience",
+                "license certification",
+                "project",
+            ],
         },
         verified: { type: Boolean, default: false },
         revisions: [
