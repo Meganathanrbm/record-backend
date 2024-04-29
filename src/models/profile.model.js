@@ -98,6 +98,18 @@ const profileSchema = new mongoose.Schema(
                 ],
             },
         ],
+        activites: [
+            {
+                activityName: { type: String, required: true },
+                organisation: { type: String, required: true },
+                activityType: { type: String, required: true },
+                startDate: { type: Date, required: true },
+                endDate: { type: Date, required: true },
+                description: { type: String, required: true },
+                verified: { type: Boolean, default: false },
+                verificationId: { type: String, required: false },
+            },
+        ],
     },
     { timestamps: true },
 );

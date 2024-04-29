@@ -85,4 +85,7 @@ module.exports = {
     PROJECT_ADDED_SUCCESSFULLY: "Project added successfully!",
     PROJECT_NOT_FOUND: "Project not found!",
     PROJECT_UPDATED_SUCCESSFULLY: "Project updated successfully!",
+    ACTIVITY_ADDED_SUCCESSFULLY: "Activity added successfully!",
+    ACTIVITY_NOT_FOUND: "Activity not found!",
+    ACTIVITY_UPDATED_SUCCESSFULLY: "Activity updated successfully!",
 };

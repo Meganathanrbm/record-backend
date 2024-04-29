@@ -18,17 +18,15 @@ const generateUUID = require("../helpers/uuid.helper");
 // Importing Controllers
 const handleSendEmail = require("./email.controller");
 
-exports.handleAddProject = async (req, res) => {
+exports.handleAddActivity = async (req, res) => {
     try {
         const {
-            projectName,
-            associatedWith,
-            projectType,
+            activityName,
+            organisation,
+            activityType,
             startDate,
             endDate,
-            projectLink,
             description,
-            skills,
             verifierEmail,
         } = req.body;
 
@@ -50,22 +48,19 @@ exports.handleAddProject = async (req, res) => {
                 message: ResponseMessageConstant.USER_NOT_FOUND,
             });
         }
-
         const generatedVerificationId = generateUUID();
-        const project = {
-            projectName,
-            associatedWith,
-            projectType,
+        const activity = {
+            activityName,
+            organisation,
+            activityType,
             startDate,
             endDate,
-            projectLink,
             description,
-            skills,
             verifierEmail,
             verificationId: skipVerification ? null : generatedVerificationId,
         };
 
-        userProfile.projects.push(project);
+        userProfile.activites.push(activity);
         await userProfile.save();
 
         if (!skipVerification) {
@@ -73,18 +68,18 @@ exports.handleAddProject = async (req, res) => {
                 userId,
                 verificationId: generatedVerificationId,
                 verifierEmail: verifierEmail,
-                verificationType: "project",
+                verificationType: "activity",
             });
 
             const isEmailSend = await handleSendEmail({
                 toAddresses: [verifierEmail],
                 source: CommonConstant.email.source.tech_team,
-                subject: CommonConstant.email.verificationOfProject.subject(
+                subject: CommonConstant.email.verificationOfActivity.subject(
                     userProfile.username,
-                    projectName,
-                    projectLink,
+                    activityName,
+                    organisation,
                 ),
-                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the Project details <a href="${process.env.EMAIL_BASE_URL}/verify-project/${generatedVerificationId}">Verfiy Project</a></p>`,
+                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the Activity details <a href="${process.env.EMAIL_BASE_URL}/verify-activity/${generatedVerificationId}">Verfiy Activity</a></p>`,
             });
 
             if (isEmailSend) {
@@ -107,13 +102,13 @@ exports.handleAddProject = async (req, res) => {
             return res.status(HttpStatusCode.Ok).json({
                 status: HttpStatusConstant.OK,
                 code: HttpStatusCode.Ok,
-                message: ResponseMessageConstant.PROJECT_UPDATED_SUCCESSFULLY,
+                message: ResponseMessageConstant.ACTIVITY_ADDED_SUCCESSFULLY,
                 data: userProfile,
             });
         }
     } catch (error) {
         console.log(
-            ErrorLogConstant.profileController.handleAddProjectErrorLog,
+            ErrorLogConstant.profileController.handleAddActivityErrorLog,
             error.message,
         );
         res.status(HttpStatusCode.InternalServerError).json({
@@ -123,10 +118,10 @@ exports.handleAddProject = async (req, res) => {
     }
 };
 
-exports.handleUpdateProject = async (req, res) => {
+exports.handleUpdateActivity = async (req, res) => {
     try {
         const { userId } = req.userSession;
-        const { projectId } = req.params;
+        const { activityId } = req.params;
 
         const userProfile = await Profile.findOne({ userId });
 
@@ -138,29 +133,27 @@ exports.handleUpdateProject = async (req, res) => {
             });
         }
 
-        const projectToUpdate = userProfile.projects.find(
-            (proj) => proj._id.toString() === projectId,
+        const activityToUpdate = userProfile.activites.find(
+            (act) => act._id.toString() === activityId,
         );
 
-        if (!projectToUpdate) {
+        if (!activityToUpdate) {
             return res.status(HttpStatusCode.NotFound).json({
                 status: HttpStatusConstant.NOT_FOUND,
                 code: HttpStatusCode.NotFound,
-                message: ResponseMessageConstant.PROJECT_NOT_FOUND,
+                message: ResponseMessageConstant.ACTIVITY_NOT_FOUND,
             });
         }
 
-        const verificationId = projectToUpdate.verificationId;
+        const verificationId = activityToUpdate.verificationId;
 
         const {
-            projectName,
-            associatedWith,
-            projectType,
+            activityName,
+            organisation,
+            activityType,
             startDate,
             endDate,
-            projectLink,
             description,
-            skills,
             verifierEmail,
         } = req.body;
 
@@ -171,17 +164,15 @@ exports.handleUpdateProject = async (req, res) => {
 
         const generatedVerificationId = generateUUID();
 
-        projectToUpdate.projectName = projectName;
-        projectToUpdate.associatedWith = associatedWith;
-        projectToUpdate.projectType = projectType;
-        projectToUpdate.projectType = projectType;
-        projectToUpdate.startDate = startDate;
-        projectToUpdate.endDate = endDate;
-        projectToUpdate.projectLink = projectLink;
-        projectToUpdate.description = description;
-        projectToUpdate.skills = skills;
+        activityToUpdate.activityName = activityName;
+        activityToUpdate.organisation = organisation;
+        activityToUpdate.activityType = activityType;
+        activityToUpdate.startDate = startDate;
+        activityToUpdate.endDate = endDate;
+        activityToUpdate.description = description;
+
         if (!skipVerification && !verificationId) {
-            projectToUpdate.verificationId = generatedVerificationId;
+            activityToUpdate.verificationId = generatedVerificationId;
         }
 
         await userProfile.save();
@@ -195,7 +186,7 @@ exports.handleUpdateProject = async (req, res) => {
                     userId,
                     verificationId: generatedVerificationId,
                     verifierEmail: verifierEmail,
-                    verificationType: "project",
+                    verificationType: "activity",
                 });
             } else {
                 const profileVerificationResponse =
@@ -207,12 +198,12 @@ exports.handleUpdateProject = async (req, res) => {
             const isEmailSend = await handleSendEmail({
                 toAddresses: [toAddressEmail],
                 source: CommonConstant.email.source.tech_team,
-                subject: CommonConstant.email.verificationOfProject.subject(
+                subject: CommonConstant.email.verificationOfActivity.subject(
                     userProfile.username,
-                    projectName,
-                    projectLink,
+                    activityName,
+                    organisation,
                 ),
-                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the Project details <a href="${process.env.EMAIL_BASE_URL}/verify-project/${generatedVerificationId}">Verfiy Project</a></p>`,
+                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the Activity details <a href="${process.env.EMAIL_BASE_URL}/verify-activity/${generatedVerificationId}">Verfiy Activity</a></p>`,
             });
 
             if (isEmailSend) {
@@ -235,13 +226,13 @@ exports.handleUpdateProject = async (req, res) => {
             res.status(HttpStatusCode.Ok).json({
                 status: HttpStatusConstant.SUCCESS,
                 code: HttpStatusCode.Ok,
-                message: ResponseMessageConstant.PROJECT_ADDED_SUCCESSFULLY,
+                message: ResponseMessageConstant.ACTIVITY_UPDATED_SUCCESSFULLY,
                 profile: userProfile,
             });
         }
     } catch (error) {
         console.log(
-            ErrorLogConstant.profileController.handleUpdateProjectErrorLog,
+            ErrorLogConstant.profileController.handleUpdateActivityErrorLog,
             error.message,
         );
         res.status(HttpStatusCode.InternalServerError).json({

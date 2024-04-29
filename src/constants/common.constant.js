@@ -27,5 +27,9 @@ module.exports = {
             subject: (name, projectName, projectLink) =>
                 `Record: Verification of Project of ${name}, ${projectName} (${projectLink})`,
         },
+        verificationOfActivity: {
+            subject: (name, activityName, organisation) =>
+                `Record: Verification of Project of ${name}, ${activityName} ${organisation}`,
+        },
     },
 };

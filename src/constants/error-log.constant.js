@@ -74,5 +74,9 @@ module.exports = {
             "🚀 ~ file: project.controller.js ~ handleAddProject ~ err",
         handleUpdateProjectErrorLog:
             "🚀 ~ file: project.controller.js ~ handleUpdateProject ~ err",
+        handleAddActivityErrorLog:
+            "🚀 ~ file: activity.controller.js ~ handleAddActivity ~ err",
+        handleUpdateActivityErrorLog:
+            "🚀 ~ file: activity.controller.js ~ handleUpdateActivity ~ err",
     },
 };

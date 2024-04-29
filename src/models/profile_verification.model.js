@@ -13,6 +13,7 @@ const profileVerificationSchema = new mongoose.Schema(
                 "work experience",
                 "license certification",
                 "project",
+                "activity",
             ],
         },
         verified: { type: Boolean, default: false },
