@@ -1,33 +1,35 @@
 const Joi = require("joi");
 
 // Importing models
-const Profile = require("../models/profile.model");
-const User = require("../models/user.model");
-const Profile_Verification = require("../models/profile_verification.model");
+const WorkExperience = require("../../models/profile/work-experience.model");
+const User = require("../../models/user.model");
+const Profile_Verification = require("../../models/profile_verification.model");
 
 // Importing Constants
-const HttpStatusConstant = require("../constants/http-message.constant");
-const HttpStatusCode = require("../constants/http-code.constant");
-const ResponseMessageConstant = require("../constants/response-message.constant");
-const CommonConstant = require("../constants/common.constant");
-const ErrorLogConstant = require("../constants/error-log.constant");
+const HttpStatusConstant = require("../../constants/http-message.constant");
+const HttpStatusCode = require("../../constants/http-code.constant");
+const ResponseMessageConstant = require("../../constants/response-message.constant");
+const CommonConstant = require("../../constants/common.constant");
+const ErrorLogConstant = require("../../constants/error-log.constant");
 
 // Importing Helpers
-const generateUUID = require("../helpers/uuid.helper");
+const generateUUID = require("../../helpers/uuid.helper");
 
 // Importing Controllers
-const handleSendEmail = require("./email.controller");
+const handleSendEmail = require("../email.controller");
 
-exports.handleAddLicenseCertification = async (req, res) => {
+exports.handleAddWorkExperience = async (req, res) => {
     try {
         const {
-            certificationName,
-            organization,
-            doneVia,
-            issuedDate,
-            expirationDate,
-            credentialId,
-            credentialURL,
+            role,
+            companyName,
+            employeeId,
+            workType,
+            location,
+            locationType,
+            startDate,
+            endDate,
+            description,
             skills,
             verifierEmail,
         } = req.body;
@@ -41,7 +43,7 @@ exports.handleAddLicenseCertification = async (req, res) => {
 
         const { userId } = req.userSession;
 
-        const userProfile = await Profile.findOne({ userId });
+        const userProfile = await User.findOne({ userId });
 
         if (!userProfile) {
             return res.status(HttpStatusCode.NotFound).json({
@@ -52,39 +54,41 @@ exports.handleAddLicenseCertification = async (req, res) => {
         }
 
         const generatedVerificationId = generateUUID();
-        const licenseCertification = {
-            certificationName,
-            organization,
-            doneVia,
-            issuedDate,
-            expirationDate,
-            credentialId,
-            credentialURL,
+
+        await WorkExperience.create({
+            userId,
+            workExperienceId: generateUUID(),
+            role,
+            companyName,
+            employeeId,
+            workType,
+            location,
+            locationType,
+            startDate,
+            endDate,
+            description,
             skills,
             verificationId: skipVerification ? null : generatedVerificationId,
-        };
-
-        userProfile.licenses_certifications.push(licenseCertification);
-        await userProfile.save();
+        });
 
         if (!skipVerification) {
             await Profile_Verification.create({
                 userId,
                 verificationId: generatedVerificationId,
                 verifierEmail: verifierEmail,
-                verificationType: "license certification",
+                verificationType: "work experience",
             });
 
             const isEmailSend = await handleSendEmail({
                 toAddresses: [verifierEmail],
                 source: CommonConstant.email.source.tech_team,
                 subject:
-                    CommonConstant.email.verificationOfLicenseCertification.subject(
+                    CommonConstant.email.verificationOfWorkExperience.subject(
                         userProfile.username,
-                        certificationName,
-                        credentialId,
+                        role,
+                        employeeId,
                     ),
-                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the License & Credential details <a href="${process.env.EMAIL_BASE_URL}/verify-license-certificate/${generatedVerificationId}">Verfiy Licenses & Credentials</a></p>`,
+                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the work experience details <a href="${process.env.EMAIL_BASE_URL}/verify-work-experience/${generatedVerificationId}">Verfiy Work Experience</a></p>`,
             });
 
             if (isEmailSend) {
@@ -108,14 +112,13 @@ exports.handleAddLicenseCertification = async (req, res) => {
                 status: HttpStatusConstant.OK,
                 code: HttpStatusCode.Ok,
                 message:
-                    ResponseMessageConstant.LICENSE_CERTIFICATION_ADDED_SUCCESSFULLY,
+                    ResponseMessageConstant.WORK_EXPERIENCE_ADDED_SUCCESSFULLY,
                 data: userProfile,
             });
         }
     } catch (error) {
         console.log(
-            ErrorLogConstant.profileController
-                .handleAddLicenseCertificationErrorLog,
+            ErrorLogConstant.profileController.handleAddWorkExperienceErrorLog,
             error.message,
         );
         res.status(HttpStatusCode.InternalServerError).json({
@@ -125,12 +128,12 @@ exports.handleAddLicenseCertification = async (req, res) => {
     }
 };
 
-exports.handleUpdateLicenseCertification = async (req, res) => {
+exports.handleUpdateWorkExperience = async (req, res) => {
     try {
         const { userId } = req.userSession;
-        const { licenseCertificationId } = req.params;
+        const { workExperienceId } = req.params;
 
-        const userProfile = await Profile.findOne({ userId });
+        const userProfile = await User.findOne({ userId });
 
         if (!userProfile) {
             return res.status(HttpStatusCode.NotFound).json({
@@ -140,30 +143,30 @@ exports.handleUpdateLicenseCertification = async (req, res) => {
             });
         }
 
-        const licenseCertificationToUpdate =
-            userProfile.licenses_certifications.find(
-                (licert) => licert._id.toString() === licenseCertificationId,
-            );
+        const workExperienceToUpdate = await WorkExperience.findOne({
+            workExperienceId,
+        });
 
-        if (!licenseCertificationToUpdate) {
+        if (!workExperienceToUpdate) {
             return res.status(HttpStatusCode.NotFound).json({
                 status: HttpStatusConstant.NOT_FOUND,
                 code: HttpStatusCode.NotFound,
-                message:
-                    ResponseMessageConstant.LICENSE_CERTIFICATION_NOT_FOUND,
+                message: ResponseMessageConstant.WORK_EXPERIENCE_NOT_FOUND,
             });
         }
 
-        const verificationId = licenseCertificationToUpdate.verificationId;
+        const verificationId = workExperienceToUpdate.verificationId;
 
         const {
-            certificationName,
-            organization,
-            doneVia,
-            issuedDate,
-            expirationDate,
-            credentialId,
-            credentialURL,
+            role,
+            companyName,
+            employeeId,
+            workType,
+            location,
+            locationType,
+            startDate,
+            endDate,
+            description,
             skills,
             verifierEmail,
         } = req.body;
@@ -175,20 +178,21 @@ exports.handleUpdateLicenseCertification = async (req, res) => {
 
         const generatedVerificationId = generateUUID();
 
-        licenseCertificationToUpdate.certificationName = certificationName;
-        licenseCertificationToUpdate.organization = organization;
-        licenseCertificationToUpdate.doneVia = doneVia;
-        licenseCertificationToUpdate.issuedDate = issuedDate;
-        licenseCertificationToUpdate.expirationDate = expirationDate;
-        licenseCertificationToUpdate.credentialId = credentialId;
-        licenseCertificationToUpdate.credentialURL = credentialURL;
-        licenseCertificationToUpdate.skills = skills;
+        workExperienceToUpdate.role = role;
+        workExperienceToUpdate.companyName = companyName;
+        workExperienceToUpdate.employeeId = employeeId;
+        workExperienceToUpdate.workType = workType;
+        workExperienceToUpdate.location = location;
+        workExperienceToUpdate.locationType = locationType;
+        workExperienceToUpdate.startDate = startDate;
+        workExperienceToUpdate.endDate = endDate;
+        workExperienceToUpdate.description = description;
+        workExperienceToUpdate.skills = skills;
         if (!skipVerification && !verificationId) {
-            licenseCertificationToUpdate.verificationId =
-                generatedVerificationId;
+            workExperienceToUpdate.verificationId = generatedVerificationId;
         }
 
-        await userProfile.save();
+        await workExperienceToUpdate.save();
 
         if (!skipVerification) {
             let toAddressEmail;
@@ -199,7 +203,7 @@ exports.handleUpdateLicenseCertification = async (req, res) => {
                     userId,
                     verificationId: generatedVerificationId,
                     verifierEmail: verifierEmail,
-                    verificationType: "license certification",
+                    verificationType: "work experience",
                 });
             } else {
                 const profileVerificationResponse =
@@ -212,12 +216,12 @@ exports.handleUpdateLicenseCertification = async (req, res) => {
                 toAddresses: [toAddressEmail],
                 source: CommonConstant.email.source.tech_team,
                 subject:
-                    CommonConstant.email.verificationOfLicenseCertification.subject(
+                    CommonConstant.email.verificationOfWorkExperience.subject(
                         userProfile.username,
-                        certificationName,
-                        credentialId,
+                        role,
+                        employeeId,
                     ),
-                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the License & Credential details <a href="${process.env.EMAIL_BASE_URL}/verify-license-certificate/${generatedVerificationId}">Verfiy Licenses & Credentials</a></p>`,
+                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the work experience details <a href="${process.env.EMAIL_BASE_URL}/verify-work-experience/${generatedVerificationId}">Verfiy Work Experience</a></p>`,
             });
 
             if (isEmailSend) {
@@ -241,14 +245,14 @@ exports.handleUpdateLicenseCertification = async (req, res) => {
                 status: HttpStatusConstant.SUCCESS,
                 code: HttpStatusCode.Ok,
                 message:
-                    ResponseMessageConstant.LICENSE_CERTIFICATION_UPDATED_SUCCESSFULLY,
+                    ResponseMessageConstant.WORK_EXPERIENCE_UPDATED_SUCCESSFULLY,
                 profile: userProfile,
             });
         }
     } catch (error) {
         console.log(
             ErrorLogConstant.profileController
-                .handleUpdateLicenseCertificationErrorLog,
+                .handleUpdateWorkExperienceErrorLog,
             error.message,
         );
         res.status(HttpStatusCode.InternalServerError).json({

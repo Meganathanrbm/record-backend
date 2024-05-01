@@ -3,7 +3,6 @@ const bcrypt = require("bcryptjs");
 
 // Importing Models
 const User = require("../models/user.model");
-const Profile = require("../models/profile.model");
 const jwtToken = require("../models/jwt-token.model");
 const verificationToken = require("../models/verification-token.model");
 const PasswordResetToken = require("../models/password-reset-token.model");
@@ -58,21 +57,7 @@ exports.handleRegister = async (req, res) => {
                 userId: generatedUserId,
                 username,
                 email,
-                isActive: true,
-                profilePicture: `https://avatars.dicebear.com/api/initials/${username.replaceAll(
-                    " ",
-                    "-",
-                )}.png`,
                 password: encryptedPassword,
-            });
-            await Profile.create({
-                userId: generatedUserId,
-                username,
-                email,
-                profilePicture: `https://avatars.dicebear.com/api/initials/${username.replaceAll(
-                    " ",
-                    "-",
-                )}.png`,
             });
             const generatedAccessToken = await signToken({
                 userId: generatedUserId,

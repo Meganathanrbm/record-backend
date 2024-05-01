@@ -1,34 +1,34 @@
 const Joi = require("joi");
 
 // Importing models
-const Profile = require("../models/profile.model");
-const User = require("../models/user.model");
-const Profile_Verification = require("../models/profile_verification.model");
+const Project = require("../../models/profile/project.model");
+const User = require("../../models/user.model");
+const Profile_Verification = require("../../models/profile_verification.model");
 
 // Importing Constants
-const HttpStatusConstant = require("../constants/http-message.constant");
-const HttpStatusCode = require("../constants/http-code.constant");
-const ResponseMessageConstant = require("../constants/response-message.constant");
-const CommonConstant = require("../constants/common.constant");
-const ErrorLogConstant = require("../constants/error-log.constant");
+const HttpStatusConstant = require("../../constants/http-message.constant");
+const HttpStatusCode = require("../../constants/http-code.constant");
+const ResponseMessageConstant = require("../../constants/response-message.constant");
+const CommonConstant = require("../../constants/common.constant");
+const ErrorLogConstant = require("../../constants/error-log.constant");
 
 // Importing Helpers
-const generateUUID = require("../helpers/uuid.helper");
+const generateUUID = require("../../helpers/uuid.helper");
 
 // Importing Controllers
-const handleSendEmail = require("./email.controller");
+const handleSendEmail = require("../email.controller");
 
-exports.handleAddEducation = async (req, res) => {
+exports.handleAddProject = async (req, res) => {
     try {
         const {
-            degree,
-            institution,
-            branch,
-            rollNumber,
-            startMonthYear,
-            endMonthYear,
-            grade,
-            activitiesRoles,
+            projectName,
+            associatedWith,
+            projectType,
+            startDate,
+            endDate,
+            projectLink,
+            description,
+            skills,
             verifierEmail,
         } = req.body;
 
@@ -41,7 +41,7 @@ exports.handleAddEducation = async (req, res) => {
 
         const { userId } = req.userSession;
 
-        const userProfile = await Profile.findOne({ userId });
+        const userProfile = await User.findOne({ userId });
 
         if (!userProfile) {
             return res.status(HttpStatusCode.NotFound).json({
@@ -50,38 +50,41 @@ exports.handleAddEducation = async (req, res) => {
                 message: ResponseMessageConstant.USER_NOT_FOUND,
             });
         }
-        const generatedVerificationId = generateUUID();
-        const education = {
-            degree,
-            institution,
-            branch,
-            rollNumber,
-            startMonthYear,
-            endMonthYear,
-            grade,
-            activitiesRoles,
-            verificationId: skipVerification ? null : generatedVerificationId,
-        };
 
-        userProfile.educations.push(education);
-        await userProfile.save();
+        const generatedVerificationId = generateUUID();
+
+        await Project.create({
+            userId,
+            projectId: generateUUID(),
+            projectName,
+            associatedWith,
+            projectType,
+            startDate,
+            endDate,
+            projectLink,
+            description,
+            skills,
+            verifierEmail,
+            verificationId: skipVerification ? null : generatedVerificationId,
+        });
 
         if (!skipVerification) {
             await Profile_Verification.create({
                 userId,
                 verificationId: generatedVerificationId,
                 verifierEmail: verifierEmail,
-                verificationType: "education",
+                verificationType: "project",
             });
 
             const isEmailSend = await handleSendEmail({
                 toAddresses: [verifierEmail],
                 source: CommonConstant.email.source.tech_team,
-                subject: CommonConstant.email.verificationOfEducation.subject(
+                subject: CommonConstant.email.verificationOfProject.subject(
                     userProfile.username,
-                    degree,
+                    projectName,
+                    projectLink,
                 ),
-                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the education details <a href="${process.env.EMAIL_BASE_URL}/verify-education/${generatedVerificationId}">Verfiy Education</a></p>`,
+                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the Project details <a href="${process.env.EMAIL_BASE_URL}/verify-project/${generatedVerificationId}">Verfiy Project</a></p>`,
             });
 
             if (isEmailSend) {
@@ -104,13 +107,13 @@ exports.handleAddEducation = async (req, res) => {
             return res.status(HttpStatusCode.Ok).json({
                 status: HttpStatusConstant.OK,
                 code: HttpStatusCode.Ok,
-                message: ResponseMessageConstant.EDUCATION_ADDED_SUCCESSFULLY,
+                message: ResponseMessageConstant.PROJECT_UPDATED_SUCCESSFULLY,
                 data: userProfile,
             });
         }
     } catch (error) {
         console.log(
-            ErrorLogConstant.profileController.handleAddEducationErrorLog,
+            ErrorLogConstant.profileController.handleAddProjectErrorLog,
             error.message,
         );
         res.status(HttpStatusCode.InternalServerError).json({
@@ -120,12 +123,12 @@ exports.handleAddEducation = async (req, res) => {
     }
 };
 
-exports.handleUpdateEducation = async (req, res) => {
+exports.handleUpdateProject = async (req, res) => {
     try {
         const { userId } = req.userSession;
-        const { educationId } = req.params;
+        const { projectId } = req.params;
 
-        const userProfile = await Profile.findOne({ userId });
+        const userProfile = await User.findOne({ userId });
 
         if (!userProfile) {
             return res.status(HttpStatusCode.NotFound).json({
@@ -135,29 +138,27 @@ exports.handleUpdateEducation = async (req, res) => {
             });
         }
 
-        const educationToUpdate = userProfile.educations.find(
-            (edu) => edu._id.toString() === educationId,
-        );
+        const projectToUpdate = await Project.findOne({ projectId });
 
-        if (!educationToUpdate) {
+        if (!projectToUpdate) {
             return res.status(HttpStatusCode.NotFound).json({
                 status: HttpStatusConstant.NOT_FOUND,
                 code: HttpStatusCode.NotFound,
-                message: ResponseMessageConstant.EDUCATION_NOT_FOUND,
+                message: ResponseMessageConstant.PROJECT_NOT_FOUND,
             });
         }
 
-        const verificationId = educationToUpdate.verificationId;
+        const verificationId = projectToUpdate.verificationId;
 
         const {
-            degree,
-            institution,
-            branch,
-            rollNumber,
-            startMonthYear,
-            endMonthYear,
-            grade,
-            activitiesRoles,
+            projectName,
+            associatedWith,
+            projectType,
+            startDate,
+            endDate,
+            projectLink,
+            description,
+            skills,
             verifierEmail,
         } = req.body;
 
@@ -168,19 +169,20 @@ exports.handleUpdateEducation = async (req, res) => {
 
         const generatedVerificationId = generateUUID();
 
-        educationToUpdate.degree = degree;
-        educationToUpdate.institution = institution;
-        educationToUpdate.branch = branch;
-        educationToUpdate.rollNumber = rollNumber;
-        educationToUpdate.startMonthYear = startMonthYear;
-        educationToUpdate.endMonthYear = endMonthYear;
-        educationToUpdate.grade = grade;
-        educationToUpdate.activitiesRoles = activitiesRoles;
+        projectToUpdate.projectName = projectName;
+        projectToUpdate.associatedWith = associatedWith;
+        projectToUpdate.projectType = projectType;
+        projectToUpdate.projectType = projectType;
+        projectToUpdate.startDate = startDate;
+        projectToUpdate.endDate = endDate;
+        projectToUpdate.projectLink = projectLink;
+        projectToUpdate.description = description;
+        projectToUpdate.skills = skills;
         if (!skipVerification && !verificationId) {
-            educationToUpdate.verificationId = generatedVerificationId;
+            projectToUpdate.verificationId = generatedVerificationId;
         }
 
-        await userProfile.save();
+        await projectToUpdate.save();
 
         if (!skipVerification) {
             let toAddressEmail;
@@ -191,7 +193,7 @@ exports.handleUpdateEducation = async (req, res) => {
                     userId,
                     verificationId: generatedVerificationId,
                     verifierEmail: verifierEmail,
-                    verificationType: "education",
+                    verificationType: "project",
                 });
             } else {
                 const profileVerificationResponse =
@@ -199,15 +201,16 @@ exports.handleUpdateEducation = async (req, res) => {
                 // handle if profile verification response not found
                 toAddressEmail = profileVerificationResponse.verifierEmail;
             }
-            console.log(toAddressEmail);
+
             const isEmailSend = await handleSendEmail({
                 toAddresses: [toAddressEmail],
                 source: CommonConstant.email.source.tech_team,
-                subject: CommonConstant.email.verificationOfEducation.subject(
+                subject: CommonConstant.email.verificationOfProject.subject(
                     userProfile.username,
-                    degree,
+                    projectName,
+                    projectLink,
                 ),
-                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the education details <a href="${process.env.EMAIL_BASE_URL}/verify-education/${generatedVerificationId}">Verfiy Education</a></p>`,
+                htmlData: `<p>Hello Dear Verifier, <br/>Welcome to Record<br/> Click the link to verify the Project details <a href="${process.env.EMAIL_BASE_URL}/verify-project/${generatedVerificationId}">Verfiy Project</a></p>`,
             });
 
             if (isEmailSend) {
@@ -230,13 +233,13 @@ exports.handleUpdateEducation = async (req, res) => {
             res.status(HttpStatusCode.Ok).json({
                 status: HttpStatusConstant.SUCCESS,
                 code: HttpStatusCode.Ok,
-                message: ResponseMessageConstant.PROFILE_UPDATED_SUCCESSFULLY,
+                message: ResponseMessageConstant.PROJECT_ADDED_SUCCESSFULLY,
                 profile: userProfile,
             });
         }
     } catch (error) {
         console.log(
-            ErrorLogConstant.profileController.handleUpdateEducationErrorLog,
+            ErrorLogConstant.profileController.handleUpdateProjectErrorLog,
             error.message,
         );
         res.status(HttpStatusCode.InternalServerError).json({

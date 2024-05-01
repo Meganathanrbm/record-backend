@@ -1,16 +1,13 @@
 const Joi = require("joi");
 
 // Importing models
-const Profile = require("../models/profile.model");
-const User = require("../models/user.model");
-const Profile_Verification = require("../models/profile_verification.model");
+const User = require("../../models/user.model");
 
 // Importing Constants
-const HttpStatusConstant = require("../constants/http-message.constant");
-const HttpStatusCode = require("../constants/http-code.constant");
-const ResponseMessageConstant = require("../constants/response-message.constant");
-const CommonConstant = require("../constants/common.constant");
-const ErrorLogConstant = require("../constants/error-log.constant");
+const HttpStatusConstant = require("../../constants/http-message.constant");
+const HttpStatusCode = require("../../constants/http-code.constant");
+const ResponseMessageConstant = require("../../constants/response-message.constant");
+const ErrorLogConstant = require("../../constants/error-log.constant");
 
 exports.handleGetUserProfileInfo = async (req, res) => {
     try {
@@ -98,7 +95,7 @@ exports.handleUpdateBasicProfile = async (req, res) => {
 
         const { userId } = req.userSession;
 
-        const userProfile = await Profile.findOne({ userId });
+        const userProfile = await User.findOne({ userId });
 
         if (!userProfile) {
             return res.status(HttpStatusCode.NotFound).json({

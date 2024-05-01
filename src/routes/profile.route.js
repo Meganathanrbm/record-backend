@@ -2,16 +2,16 @@ const express = require("express");
 const router = express.Router();
 
 // Importing controllers
-const profileController = require("../controllers/profile.controller");
-const educationController = require("../controllers/education.controller");
-const workExperienceController = require("../controllers/work-experience.controller");
-const licenseCertificationController = require("../controllers/license-certification.controller");
-const projectController = require("../controllers/project.controller");
-const activityController = require("../controllers/activity.controller");
+const profileController = require("../controllers/profile/profile.controller");
+const educationController = require("../controllers/profile/education.controller");
+const workExperienceController = require("../controllers/profile/work-experience.controller");
+const licenseCertificationController = require("../controllers/profile/license-certification.controller");
+const projectController = require("../controllers/profile/project.controller");
+const activityController = require("../controllers/profile/activity.controller");
 
 router.get("/:userId", profileController.handleGetUserProfileInfo);
 
-router.put("/", profileController.handleUpdateBasicProfile);
+router.put("/basic-profile", profileController.handleUpdateBasicProfile);
 
 // Education routes
 router.post("/education", educationController.handleAddEducation);

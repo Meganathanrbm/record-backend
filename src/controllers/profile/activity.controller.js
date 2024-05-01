@@ -1,22 +1,22 @@
 const Joi = require("joi");
 
 // Importing models
-const Profile = require("../models/profile.model");
-const User = require("../models/user.model");
-const Profile_Verification = require("../models/profile_verification.model");
+const Activity = require("../../models/profile/activity.model");
+const User = require("../../models/user.model");
+const Profile_Verification = require("../../models/profile_verification.model");
 
 // Importing Constants
-const HttpStatusConstant = require("../constants/http-message.constant");
-const HttpStatusCode = require("../constants/http-code.constant");
-const ResponseMessageConstant = require("../constants/response-message.constant");
-const CommonConstant = require("../constants/common.constant");
-const ErrorLogConstant = require("../constants/error-log.constant");
+const HttpStatusConstant = require("../../constants/http-message.constant");
+const HttpStatusCode = require("../../constants/http-code.constant");
+const ResponseMessageConstant = require("../../constants/response-message.constant");
+const CommonConstant = require("../../constants/common.constant");
+const ErrorLogConstant = require("../../constants/error-log.constant");
 
 // Importing Helpers
-const generateUUID = require("../helpers/uuid.helper");
+const generateUUID = require("../../helpers/uuid.helper");
 
 // Importing Controllers
-const handleSendEmail = require("./email.controller");
+const handleSendEmail = require("../email.controller");
 
 exports.handleAddActivity = async (req, res) => {
     try {
@@ -39,7 +39,7 @@ exports.handleAddActivity = async (req, res) => {
 
         const { userId } = req.userSession;
 
-        const userProfile = await Profile.findOne({ userId });
+        const userProfile = await User.findOne({ userId });
 
         if (!userProfile) {
             return res.status(HttpStatusCode.NotFound).json({
@@ -49,7 +49,10 @@ exports.handleAddActivity = async (req, res) => {
             });
         }
         const generatedVerificationId = generateUUID();
-        const activity = {
+
+        await Activity.create({
+            userId,
+            activityId: generateUUID(),
             activityName,
             organisation,
             activityType,
@@ -58,10 +61,7 @@ exports.handleAddActivity = async (req, res) => {
             description,
             verifierEmail,
             verificationId: skipVerification ? null : generatedVerificationId,
-        };
-
-        userProfile.activites.push(activity);
-        await userProfile.save();
+        });
 
         if (!skipVerification) {
             await Profile_Verification.create({
@@ -123,7 +123,7 @@ exports.handleUpdateActivity = async (req, res) => {
         const { userId } = req.userSession;
         const { activityId } = req.params;
 
-        const userProfile = await Profile.findOne({ userId });
+        const userProfile = await User.findOne({ userId });
 
         if (!userProfile) {
             return res.status(HttpStatusCode.NotFound).json({
@@ -133,9 +133,7 @@ exports.handleUpdateActivity = async (req, res) => {
             });
         }
 
-        const activityToUpdate = userProfile.activites.find(
-            (act) => act._id.toString() === activityId,
-        );
+        const activityToUpdate = await Activity.findOne({ activityId });
 
         if (!activityToUpdate) {
             return res.status(HttpStatusCode.NotFound).json({
@@ -175,7 +173,7 @@ exports.handleUpdateActivity = async (req, res) => {
             activityToUpdate.verificationId = generatedVerificationId;
         }
 
-        await userProfile.save();
+        await activityToUpdate.save();
 
         if (!skipVerification) {
             let toAddressEmail;
