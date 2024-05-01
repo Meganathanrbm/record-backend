@@ -40,20 +40,42 @@ exports.handleGetUserProfileInfo = async (req, res) => {
                 },
                 {
                     $lookup: {
-                        from: "skills",
-                        localField: "skills",
-                        foreignField: "skillId",
-                        as: "skills",
+                        from: "educations",
+                        localField: "userId",
+                        foreignField: "userId",
+                        as: "educations",
                     },
                 },
                 {
-                    $project: {
-                        _id: 0,
-                        profilePicture: 1,
-                        userId: 1,
-                        username: 1,
-                        skills: 1,
-                        isOnBoardingCompleted: 1,
+                    $lookup: {
+                        from: "workexperiences",
+                        localField: "userId",
+                        foreignField: "userId",
+                        as: "workexperiences",
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "licensecertifications",
+                        localField: "userId",
+                        foreignField: "userId",
+                        as: "licensecertifications",
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "projects",
+                        localField: "userId",
+                        foreignField: "userId",
+                        as: "projects",
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "activities",
+                        localField: "userId",
+                        foreignField: "userId",
+                        as: "activities",
                     },
                 },
             ]);
