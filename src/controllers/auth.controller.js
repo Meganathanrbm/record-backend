@@ -225,12 +225,11 @@ exports.handleVerifiySession = async (req, res) => {
 
             const user = await User.findOne({
                 userId: decodedToken.userId,
-                isActive: true,
             }).select(
                 "-password -_id -isManualAuth -createdAt -updatedAt -googleId -__v",
             );
 
-            if (!user || !user.isActive) {
+            if (!user) {
                 return res.status(HttpStatusCode.Unauthorized).json({
                     status: HttpStatusConstant.UNAUTHORIZED,
                     code: HttpStatusCode.Unauthorized,

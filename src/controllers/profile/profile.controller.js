@@ -80,6 +80,10 @@ exports.handleGetUserProfileInfo = async (req, res) => {
                 },
             ]);
 
+            const interestBasesSkills =
+                userProfileInfoResponse.interestBasedSkills;
+            console.log(interestBasesSkills);
+
             res.status(HttpStatusCode.Ok).json({
                 status: HttpStatusConstant.OK,
                 code: HttpStatusCode.Ok,

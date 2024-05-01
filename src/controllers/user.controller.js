@@ -167,7 +167,7 @@ exports.handleOnBoarding = async (req, res) => {
                 },
                 {
                     $set: {
-                        skills: req.body,
+                        interestBasedSkills: req.body,
                         isOnBoardingCompleted: true,
                     },
                 },
