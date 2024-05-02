@@ -13,12 +13,14 @@ const generateUUID = require("../helpers/uuid.helper");
 // Importing models
 const Skill = require("../models/skill.model");
 
+// Importing Controllers
+const imageController = require("./image.controller");
+
 exports.handleCreateSkill = async (req, res) => {
     try {
         const skillValidation = Joi.object({
             skillName: Joi.string().required(),
             skillCategoryId: Joi.string().required(),
-            imageUrl: Joi.string().required(),
         });
 
         const { error } = skillValidation.validate(req.body);
@@ -30,7 +32,7 @@ exports.handleCreateSkill = async (req, res) => {
                 message: error.details[0].message.replace(/"/g, ""),
             });
         } else {
-            const { skillName } = req.body;
+            const { skillName, skillCategoryId, image } = req.body;
             const transfromedSkillName = skillName
                 .toLowerCase()
                 .trim()
@@ -47,10 +49,27 @@ exports.handleCreateSkill = async (req, res) => {
                 });
             } else {
                 const skillId = generateUUID();
+
+                const imageName = generateUUID();
+
+                const imageUrl = await imageController.uploadImageToS3(
+                    imageName,
+                    req.file,
+                );
+
+                if (imageUrl == null) {
+                    return res.status(HttpStatusCode.InternalServerError).json({
+                        status: HttpStatusConstant.ERROR,
+                        code: HttpStatusCode.InternalServerError,
+                        message: ResponseMessageConstant.IMAGE_UPLOAD_FAILED,
+                    });
+                }
+
                 const skillCategory = await Skill.create({
-                    ...req.body,
                     skillId,
                     skillName: transfromedSkillName,
+                    skillCategoryId,
+                    imageUrl,
                 });
                 return res.status(HttpStatusCode.Created).json({
                     status: HttpStatusConstant.CREATED,

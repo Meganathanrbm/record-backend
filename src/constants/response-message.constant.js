@@ -50,6 +50,9 @@ module.exports = {
     VERIFICATION_TOKEN_NOT_FOUND: "Verification token not found!",
     PASSWORD_RESET_TOKEN_NOT_FOUND: "Password reset token not found!",
 
+    // Image messages
+    IMAGE_UPLOAD_FAILED: "Image upload failed",
+
     // Youtube messages
     PLAYLIST_ALREADY_EXISTS: "Playlist already exists!",
     PLAYLIST_DETAILS_FETCHING_FAILED: "Playlist details fetching failed!",
