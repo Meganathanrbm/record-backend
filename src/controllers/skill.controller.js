@@ -33,12 +33,10 @@ exports.handleCreateSkill = async (req, res) => {
             });
         } else {
             const { skillName, skillCategoryId, image } = req.body;
-            const transfromedSkillName = skillName
-                .toLowerCase()
-                .trim()
-                .replace(/\s+/g, " ");
-            const isSkillExists = await Skill.exists({
-                skillName: transfromedSkillName,
+
+            const isSkillExists = await Skill.findOne({
+                skillCategoryId,
+                skillName,
             });
 
             if (isSkillExists) {
@@ -67,7 +65,7 @@ exports.handleCreateSkill = async (req, res) => {
 
                 const skillCategory = await Skill.create({
                     skillId,
-                    skillName: transfromedSkillName,
+                    skillName: skillName,
                     skillCategoryId,
                     imageUrl,
                 });

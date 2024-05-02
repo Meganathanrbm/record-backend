@@ -216,3 +216,33 @@ exports.handleDeleteCourseByCourseId = async (req, res) => {
     try {
     } catch (error) {}
 };
+
+exports.handleGetCourseProgress = async (userId) => {
+    try {
+        const youtubeCourses = await Youtube_Course.find({ authorId: userId });
+        const coursesInProgress = youtubeCourses.map((course) => {
+            let totalDuration = 0;
+            let totalProgress = 0;
+            for (const video of course.courseProgress) {
+                totalDuration += video.duration;
+                totalProgress += video.progress;
+            }
+            const progress = Math.round((totalProgress / totalDuration) * 100);
+            return {
+                _id: course._id,
+                youtubeCourseId: course.youtubeCourseId,
+                authorId: course.authorId,
+                playlistId: course.playlistId,
+                isCompleted: course.isCompleted,
+                courseProgress: progress,
+            };
+        });
+        return coursesInProgress;
+    } catch (error) {
+        console.log(
+            ErrorLogConstant.youtubeController.handleGetCourseProgressErrorLog,
+            error.message,
+        );
+        throw error;
+    }
+};

@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema(
         username: { type: String, required: true },
         email: { type: String, required: true },
         password: { type: String, required: false },
+        isActive: { type: Boolean, default: false },
         fullName: { type: String, required: false },
         profilePicture: { type: String, required: false },
         dateOfBirth: { type: String, required: false },
@@ -25,6 +26,13 @@ const userSchema = new mongoose.Schema(
         interestBasedSkills: { type: Array, default: [] },
         isEmailVerified: { type: Boolean, default: false },
         lastLogin: { type: Date },
+        goalType: {
+            type: String,
+            enum: ["monthly", "yearly"],
+        },
+        goalHours: {
+            type: Number,
+        },
     },
     { timestamps: true },
 );

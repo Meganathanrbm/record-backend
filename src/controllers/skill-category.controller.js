@@ -30,13 +30,8 @@ exports.handleCreateSkillCategory = async (req, res) => {
         } else {
             const { categoryName } = req.body;
 
-            const transfromedSkillCategoryName = categoryName
-                .toLowerCase()
-                .trim()
-                .replace(/\s+/g, "-");
-
             const isSkillCategoryExists = await SkillCategory.exists({
-                categoryName: transfromedSkillCategoryName,
+                categoryName: categoryName,
             });
 
             if (isSkillCategoryExists) {
@@ -51,7 +46,7 @@ exports.handleCreateSkillCategory = async (req, res) => {
 
                 const skillCategory = await SkillCategory.create({
                     skillCategoryId,
-                    categoryName: transfromedSkillCategoryName,
+                    categoryName: categoryName,
                 });
                 return res.status(HttpStatusCode.Created).json({
                     status: HttpStatusConstant.CREATED,
@@ -97,17 +92,12 @@ exports.handleUpdateSkillCategory = async (req, res) => {
             } else {
                 const { categoryName } = req.body;
 
-                const transfromedSkillCategoryName = categoryName
-                    .toLowerCase()
-                    .trim()
-                    .replace(/\s+/g, "-");
-
                 const updatedSkillCategoryResponse =
                     await SkillCategory.findOneAndUpdate(
                         { skillCategoryId },
                         {
                             $set: {
-                                categoryName: transfromedSkillCategoryName,
+                                categoryName: categoryName,
                             },
                         },
                         { new: true },

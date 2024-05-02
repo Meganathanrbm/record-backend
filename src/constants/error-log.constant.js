@@ -42,6 +42,8 @@ module.exports = {
             "🚀 ~ file: youtube.controller.js ~ handleGetCourseDetails ~ err",
         handleGetVideoDetailsErrorLog:
             "🚀 ~ file: youtube.controller.js ~ handleGetVideoDetails ~ err",
+        handleGetCourseProgressErrorLog:
+            "🚀 ~ file: youtube.controller.js ~ handleGetCourseProgress ~ err",
     },
     skillController: {
         handleCreateSkillErrorLog:
@@ -80,5 +82,9 @@ module.exports = {
             "🚀 ~ file: activity.controller.js ~ handleAddActivity ~ err",
         handleUpdateActivityErrorLog:
             "🚀 ~ file: activity.controller.js ~ handleUpdateActivity ~ err",
+    },
+    dashboardController: {
+        handleGetDashboardErrorLog:
+            "🚀 ~ file: dashboard.controller.js ~ handleGetDashboard ~ err",
     },
 };

@@ -6,7 +6,6 @@ const User = require("../models/user.model");
 const jwtToken = require("../models/jwt-token.model");
 const verificationToken = require("../models/verification-token.model");
 const PasswordResetToken = require("../models/password-reset-token.model");
-const User_Engagement = require("../models/user_engagement.model");
 
 // Importing Constants
 const HttpStatusConstant = require("../constants/http-message.constant");
@@ -135,28 +134,6 @@ exports.handleLogin = async (req, res) => {
                     username,
                     email,
                 });
-
-                user.lastLogin = new Date();
-                await user.save();
-
-                const currentTime = Date.now();
-                const currentDate = new Date().toISOString().split("T")[0];
-                const userEngagement = await User_Engagement.findOne({
-                    userId,
-                    date: currentDate,
-                });
-                if (!userEngagement) {
-                    await User_Engagement.create({
-                        userId,
-                        date: new Date().toISOString().split("T")[0],
-                        lastConnected: Date.now(),
-                        spentHours: 0,
-                    });
-                } else {
-                    userEngagement.lastConnected = currentTime;
-                    userEngagement.save();
-                }
-
                 res.cookie(
                     CommonConstant.signatureCookieName,
                     generatedAccessToken,
