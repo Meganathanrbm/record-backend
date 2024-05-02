@@ -57,6 +57,7 @@ module.exports = {
     PLAYLIST_ALREADY_EXISTS: "Playlist already exists!",
     PLAYLIST_DETAILS_FETCHING_FAILED: "Playlist details fetching failed!",
     PLAYLIST_ITEMS_FETCHING_FAILED: "Playlist items fetching failed!",
+    VIDEO_DETAILS_FETCHING_FAILED: "Video details fetching failed!",
 
     // Course messages
     COURSE_NOT_FOUND: "Course not found!",

@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const { parse, toSeconds } = require("iso8601-duration");
 
 // Importing models
 const Youtube_Course = require("../models/youtube-course.model");
@@ -61,73 +62,59 @@ exports.handleCreateYouTubeCourse = async (req, res) => {
             });
         }
 
-        youtubeService.handleGetYoutubePlaylistItems({
-            payload: {
-                playlistId,
-            },
-            success: async ({ data: youtubePlaylistItemsResponse }) => {
-                youtubeService.handleGetYoutubePlaylistDetails({
-                    payload: {
-                        playlistId,
-                    },
-                    success: async ({ data: youtubePlaylistDetails }) => {
-                        const youtubeCoursePayload = {
-                            youtubeCourseId: generateUUID(),
-                            playlistId,
-                            authorId: userId,
-                            courseMetaData:
-                                youtubePlaylistDetails.items.length > 0
-                                    ? youtubePlaylistDetails.items[0].snippet
-                                    : null,
-                            courseContent: youtubePlaylistItemsResponse.items,
-                            courseProgress:
-                                youtubePlaylistItemsResponse.items.map(
-                                    (item) => {
-                                        return {
-                                            videoId:
-                                                item.snippet.resourceId.videoId,
-                                            isCompleted: false,
-                                        };
-                                    },
-                                ),
-                        };
-                        const youtubeCourseCreationResponse =
-                            await Youtube_Course.create(youtubeCoursePayload);
+        const youtubePlaylistItemsResponse =
+            await youtubeService.handleGetYoutubePlaylistItems(playlistId);
 
-                        res.status(HttpStatusCode.Created).json({
-                            status: HttpStatusConstant.SUCCESS,
-                            code: HttpStatusCode.Created,
-                            data: youtubeCourseCreationResponse,
-                        });
-                    },
-                    error: (error) => {
-                        console.log(
-                            ErrorLogConstant.youtubeController
-                                .handleGetYoutubePlaylistDetailsErrorLog,
-                            error.message,
-                        );
-                        res.status(HttpStatusCode.InternalServerError).json({
-                            status: HttpStatusConstant.ERROR,
-                            code: HttpStatusCode.InternalServerError,
-                            message:
-                                ResponseMessageConstant.PLAYLIST_DETAILS_FETCHING_FAILED,
-                        });
-                    },
-                });
+        const youtubePlaylistDetailsResponse =
+            await youtubeService.handleGetYoutubePlaylistDetails(playlistId);
+
+        const videoIds = youtubePlaylistItemsResponse.items.map(
+            (item) => item.snippet.resourceId.videoId,
+        );
+
+        const videoDetailsResponses = await Promise.all(
+            videoIds.map((videoId) =>
+                youtubeService.handleGetVideoDetails(videoId),
+            ),
+        );
+
+        const courseProgress = youtubePlaylistItemsResponse.items.map(
+            (item, index) => {
+                const durationString =
+                    videoDetailsResponses[index].items[0].contentDetails
+                        .duration;
+                const durationObject = parse(durationString);
+                const totalSeconds = toSeconds(durationObject);
+                return {
+                    videoId: item.snippet.resourceId.videoId,
+                    duration: totalSeconds,
+                    progress: 0,
+                    lastStopped: 0,
+                    isCompleted: false,
+                };
             },
-            error: (err) => {
-                console.log(
-                    ErrorLogConstant.youtubeController
-                        .handleGetYoutubePlaylistItemsErrorLog,
-                    err.message,
-                );
-                res.status(HttpStatusCode.InternalServerError).json({
-                    status: HttpStatusConstant.ERROR,
-                    code: HttpStatusCode.InternalServerError,
-                    message:
-                        ResponseMessageConstant.PLAYLIST_ITEMS_FETCHING_FAILED,
-                });
-            },
+        );
+
+        const youtubeCoursePayload = {
+            youtubeCourseId: generateUUID(),
+            playlistId,
+            authorId: userId,
+            courseMetaData:
+                youtubePlaylistDetailsResponse.items.length > 0
+                    ? youtubePlaylistDetailsResponse.items[0].snippet
+                    : null,
+            courseContent: youtubePlaylistItemsResponse.items,
+            courseProgress,
+        };
+
+        const youtubeCourseCreationResponse = await Youtube_Course.create(
+            youtubeCoursePayload,
+        );
+
+        res.status(HttpStatusCode.Created).json({
+            status: HttpStatusConstant.SUCCESS,
+            code: HttpStatusCode.Created,
+            data: youtubeCourseCreationResponse,
         });
     } catch (error) {
         console.log(
@@ -135,10 +122,18 @@ exports.handleCreateYouTubeCourse = async (req, res) => {
                 .handleCreateYouTubeCourseErrorLog,
             error.message,
         );
-        res.status(HttpStatusCode.InternalServerError).json({
-            status: HttpStatusConstant.ERROR,
-            code: HttpStatusCode.InternalServerError,
-        });
+        if (error.response) {
+            res.status(error.response.status).json({
+                status: HttpStatusConstant.ERROR,
+                code: error.response.status,
+                message: error.response.data.message,
+            });
+        } else {
+            res.status(HttpStatusCode.InternalServerError).json({
+                status: HttpStatusConstant.ERROR,
+                code: HttpStatusCode.InternalServerError,
+            });
+        }
     }
 };
 

@@ -40,6 +40,8 @@ module.exports = {
             "🚀 ~ file: youtube.controller.js ~ handleGetYoutubePlaylistItems ~ err",
         handleGetCourseDetailsErrorLog:
             "🚀 ~ file: youtube.controller.js ~ handleGetCourseDetails ~ err",
+        handleGetVideoDetailsErrorLog:
+            "🚀 ~ file: youtube.controller.js ~ handleGetVideoDetails ~ err",
     },
     skillController: {
         handleCreateSkillErrorLog:
