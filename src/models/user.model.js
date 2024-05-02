@@ -24,6 +24,7 @@ const userSchema = new mongoose.Schema(
         isOnBoardingCompleted: { type: Boolean, default: false },
         interestBasedSkills: { type: Array, default: [] },
         isEmailVerified: { type: Boolean, default: false },
+        lastLogin: { type: Date },
     },
     { timestamps: true },
 );
