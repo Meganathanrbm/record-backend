@@ -105,4 +105,10 @@ module.exports = {
         handleUpdateDepartmentErrorLog:
             "🚀 ~ file: department.controller.js ~ handleUpdateDepartment ~ err",
     },
+    learningsController: {
+        handleGetUserLearningsErrorLog:
+            "🚀 ~ file: learnings.controller.js ~ handleGetUserLearnings ~ err",
+        handleUpdateCourseProgressErrorLog:
+            "🚀 ~ file: learnings.controller.js ~ handleUpdateCourseProgress ~ err",
+    },
 };

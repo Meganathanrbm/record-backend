@@ -71,6 +71,9 @@ module.exports = {
 
     // Course messages
     COURSE_NOT_FOUND: "Course not found!",
+    COURSE_PROGRESS_UPDATED_SUCCESSFULLY:
+        "Course progress updated successfully!",
+    COURSE_VIDEO_NOT_FOUND: "Course video not found!",
 
     // Skill messages
     SKILL_ALREADY_EXISTS: "Skill already exists!",

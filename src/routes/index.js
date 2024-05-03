@@ -12,6 +12,7 @@ const skillRoute = require("./skill.route");
 const skillCategoryRoute = require("./skill-category.route");
 const institutionRoute = require("./institution.route");
 const departmentRoute = require("./department.route");
+const learningsRoute = require("./learnings.route");
 
 // Non authorization routes
 router.use("/auth", authRoute);
@@ -20,6 +21,7 @@ router.use("/auth", authRoute);
 // Authorization routes
 router.use("/user", verifyUser, userRoute);
 router.use("/tools", verifyUser, toolsRoute);
+router.use("/learnings", verifyUser, learningsRoute);
 router.use("/skill", verifyUser, skillRoute);
 router.use("/skill-category", verifyUser, skillCategoryRoute);
 
