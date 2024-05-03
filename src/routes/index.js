@@ -15,9 +15,11 @@ const departmentRoute = require("./department.route");
 const dashboardRoute = require("./dashboard.route");
 const learningsRoute = require("./learnings.route");
 
+const authstaffRoute = require("./authStaff.route");
+
 // Non authorization routes
 router.use("/auth", authRoute);
-// router.use("/authstaff");
+router.use("/authstaff", authstaffRoute);
 
 // Authorization routes
 router.use("/user", verifyUser, userRoute);

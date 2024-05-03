@@ -5,6 +5,7 @@ module.exports = {
     REQUIRED_TOKEN: "Token is required!",
     INVALID_CREDENTIALS: "Invalid Credentials!",
     INCORRECT_AUTHENTICATION: "Incorrect authentication!",
+    INSUFFICIENT_ROLE: "Forbidden: Insufficient role!",
 
     // User messages
     USER_ID_REQUIRED: "User Id is required!",
@@ -14,6 +15,12 @@ module.exports = {
     USERNAME_ALREADY_EXISTS: "Username already exist!",
     USERNAME_AVAILABLE: "Username available!",
     USER_UPDATED_SUCCESSFULLY: "User updated successfully!",
+
+    // User messages
+    STAFF_ID_REQUIRED: "Staff Id is required!",
+    STAFF_NOT_FOUND: "Staff Not Found!",
+    STAFF_ALREADY_EXISTS: "Staff already exist!",
+    STAFF_UPDATED_SUCCESSFULLY: "Staff updated successfully!",
 
     // Instituion messages
     INSTITUTION_ALREADY_EXISTS: "Institution already exist!",
