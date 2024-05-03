@@ -269,6 +269,65 @@ exports.handleUpdateCourseProgress = async (req, res) => {
     }
 };
 
+exports.handleGetCourse = async (req, res) => {
+    try {
+        const { userId } = req.userSession;
+
+        const checkIsUserExists = await User.findOne({
+            userId,
+        });
+
+        if (!checkIsUserExists) {
+            return res.status(HttpStatusCode.NotFound).json({
+                status: HttpStatusConstant.NOT_FOUND,
+                code: HttpStatusCode.NotFound,
+                message: ResponseMessageConstant.USER_NOT_FOUND,
+            });
+        }
+
+        const { courseId } = req.params;
+
+        const youtubeCourse = await Youtube_Course.findOne({
+            authorId: userId,
+            youtubeCourseId: courseId,
+        });
+
+        if (!youtubeCourse) {
+            return res.status(HttpStatusCode.NotFound).json({
+                status: HttpStatusConstant.NOT_FOUND,
+                code: HttpStatusCode.NotFound,
+                message: ResponseMessageConstant.COURSE_NOT_FOUND,
+            });
+        }
+
+        const courseContentToSend = youtubeCourse.courseContent.map(
+            (content) => ({
+                videoTitle: content.snippet.title,
+                description: content.snippet.description,
+                thumbnails: content.snippet.thumbnails,
+                position: content.snippet.position,
+                videoId: content.snippet.resourceId.videoId,
+            }),
+        );
+
+        res.status(HttpStatusCode.Ok).json({
+            status: HttpStatusConstant.SUCCESS,
+            code: HttpStatusCode.Ok,
+            message: ResponseMessageConstant.SUCCESS,
+            courseContent: courseContentToSend,
+        });
+    } catch (error) {
+        console.log(
+            ErrorLogConstant.learningsController.handleGetUserLearningsErrorLog,
+            error.message,
+        );
+        res.status(HttpStatusCode.InternalServerError).json({
+            status: HttpStatusConstant.ERROR,
+            code: HttpStatusCode.InternalServerError,
+        });
+    }
+};
+
 exports.handleSetLearningGoal = async (req, res) => {
     try {
         const { userId } = req.userSession;
@@ -384,6 +443,69 @@ exports.handleAddNotes = async (req, res) => {
     } catch (error) {
         console.log(
             ErrorLogConstant.learningsController.handleAddNotes,
+            error.message,
+        );
+        res.status(HttpStatusCode.InternalServerError).json({
+            status: HttpStatusConstant.ERROR,
+            code: HttpStatusCode.InternalServerError,
+        });
+    }
+};
+
+exports.handleGetNotes = async (req, res) => {
+    try {
+        const { userId } = req.userSession;
+
+        const user = await User.findOne({
+            userId,
+        });
+
+        if (!user) {
+            return res.status(HttpStatusCode.NotFound).json({
+                status: HttpStatusConstant.NOT_FOUND,
+                code: HttpStatusCode.NotFound,
+                message: ResponseMessageConstant.USER_NOT_FOUND,
+            });
+        }
+
+        const { courseId, videoId, videoTime, notes } = req.body;
+
+        const youtubeCourse = await Youtube_Course.findOne({
+            authorId: userId,
+            youtubeCourseId: courseId,
+        });
+
+        if (!youtubeCourse) {
+            return res.status(HttpStatusCode.NotFound).json({
+                status: HttpStatusConstant.NOT_FOUND,
+                code: HttpStatusCode.NotFound,
+                message: ResponseMessageConstant.COURSE_NOT_FOUND,
+            });
+        }
+
+        const courseNotesIndex = youtubeCourse.courseNotes.findIndex(
+            (note) => note.videoId === videoId,
+        );
+
+        if (courseNotesIndex === -1) {
+            return res.status(HttpStatusCode.NotFound).json({
+                status: HttpStatusConstant.NOT_FOUND,
+                code: HttpStatusCode.NotFound,
+                message: ResponseMessageConstant.NOTES_NOT_FOUND,
+            });
+        }
+
+        const notesForVideo = youtubeCourse.courseNotes[courseNotesIndex].notes;
+
+        res.status(HttpStatusCode.Ok).json({
+            status: HttpStatusConstant.SUCCESS,
+            code: HttpStatusCode.Ok,
+            message: ResponseMessageConstant.SUCCESS,
+            notes: notesForVideo,
+        });
+    } catch (error) {
+        console.log(
+            ErrorLogConstant.learningsController.handleAddNotesErrorLog,
             error.message,
         );
         res.status(HttpStatusCode.InternalServerError).json({

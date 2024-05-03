@@ -112,8 +112,12 @@ module.exports = {
             "🚀 ~ file: learnings.controller.js ~ handleUpdateCourseProgress ~ err",
         handleSetLearningGoalErrorLog:
             "🚀 ~ file: learnings.controller.js ~ handleSetLearningGoal ~ err",
+        handleGetCourseErrorLog:
+            "🚀 ~ file: learnings.controller.js ~ handleGetCourse ~ err",
         handleAddNotesErrorLog:
             "🚀 ~ file: learnings.controller.js ~ handleAddNotes ~ err",
+        handleGetNotesErrorLog:
+            "🚀 ~ file: learnings.controller.js ~ handleGetNotes ~ err",
         handleUpdateNotesErrorLog:
             "🚀 ~ file: learnings.controller.js ~ handleUpdateNotes ~ err",
         handleDeleteNotesErrorLog:
