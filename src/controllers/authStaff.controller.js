@@ -104,6 +104,128 @@ exports.handleRegister = async (req, res) => {
     }
 };
 
+exports.handleAddStaff = async (req, res) => {
+    try {
+        const { departmentId, fullName, email, role } = req.body;
+
+        const userValidation = Joi.object({
+            departmentId: Joi.string().required(),
+            fullName: Joi.string().required(),
+            email: Joi.string().email().required(),
+            role: Joi.string().required(),
+        });
+
+        const { error } = userValidation.validate(req.body);
+
+        if (error) {
+            return res.status(HttpStatusCode.BadRequest).json({
+                status: HttpStatusConstant.BAD_REQUEST,
+                code: HttpStatusCode.BadRequest,
+                message: error.details[0].message.replace(/"/g, ""),
+            });
+        }
+
+        const { staffId } = req.staffSession;
+
+        const admin = await Staff.findOne({ staffId });
+
+        const institutionId = admin.institutionId;
+
+        const institution = await Institution.findOne({ institutionId });
+
+        if (!institution) {
+            return res.status(HttpStatusCode.NotFound).json({
+                status: HttpStatusConstant.NOT_FOUND,
+                code: HttpStatusCode.NotFound,
+                message: ResponseMessageConstant.INSTITUTION_NOT_FOUND,
+            });
+        }
+
+        const staffExists = await Staff.findOne({ email });
+
+        if (staffExists) {
+            res.status(HttpStatusCode.Conflict).json({
+                status: HttpStatusConstant.CONFLICT,
+                code: HttpStatusCode.Conflict,
+                message: ResponseMessageConstant.STAFF_ALREADY_EXISTS,
+            });
+        } else {
+            const password = "admin123";
+            const encryptedPassword = await bcrypt.hash(password, 10);
+            const generatedStaffId = generateUUID();
+
+            const department = await Department.findOne({
+                institutionId,
+                departmentId,
+            });
+            if (!department) {
+                return res.status(HttpStatusCode.NotFound).json({
+                    status: HttpStatusConstant.NOT_FOUND,
+                    code: HttpStatusCode.NotFound,
+                    message: ResponseMessageConstant.DEPARTMENT_NOT_FOUND,
+                });
+            }
+
+            const departmentName = department.name;
+
+            if (departmentName === "Administrative") {
+                if (role === "Administrator") {
+                    await Staff.create({
+                        staffId: generatedStaffId,
+                        institutionId,
+                        departmentId,
+                        role,
+                        fullName,
+                        email,
+                        password: encryptedPassword,
+                    });
+                } else {
+                    return res.status(HttpStatusCode.BadRequest).json({
+                        status: HttpStatusConstant.BAD_REQUEST,
+                        code: HttpStatusCode.BadRequest,
+                        message:
+                            ResponseMessageConstant.INVALID_ROLE_FOR_DEPARTMENT,
+                    });
+                }
+            } else {
+                if (role === "Administrator") {
+                    return res.status(HttpStatusCode.BadRequest).json({
+                        status: HttpStatusConstant.BAD_REQUEST,
+                        code: HttpStatusCode.BadRequest,
+                        message:
+                            ResponseMessageConstant.INVALID_ROLE_FOR_DEPARTMENT,
+                    });
+                } else {
+                    await Staff.create({
+                        staffId: generatedStaffId,
+                        institutionId,
+                        departmentId,
+                        role,
+                        fullName,
+                        email,
+                        password: encryptedPassword,
+                    });
+                }
+            }
+
+            res.status(HttpStatusCode.Created).json({
+                status: HttpStatusConstant.CREATED,
+                code: HttpStatusCode.Created,
+                message: ResponseMessageConstant.STAFF_CREATED_SUCCESSFULLY,
+            });
+        }
+    } catch (error) {
+        console.log(
+            ErrorLogConstant.authStaffController.handleAddStaffErrorLog,
+            error.message,
+        );
+        res.status(HttpStatusCode.InternalServerError).json({
+            status: HttpStatusConstant.ERROR,
+            code: HttpStatusCode.InternalServerError,
+        });
+    }
+};
+
 exports.handleLogin = async (req, res) => {
     try {
         const { email, password } = req.body;

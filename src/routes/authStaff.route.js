@@ -5,12 +5,20 @@ const router = express.Router();
 const authStaffController = require("../controllers/authStaff.controller");
 
 // Importing middlewares
-const verifyUser = require("../middlewares/user.mw");
+const verifyStaff = require("../middlewares/staff.mw");
+const verifyRole = require("../middlewares/verifyRole.mw");
 
 // Manual Auth Routes
 router.post("/register", authStaffController.handleRegister);
 router.post("/login", authStaffController.handleLogin);
 router.post("/logout", authStaffController.handleLogout);
+
+router.post(
+    "/addStaff",
+    verifyStaff,
+    verifyRole(["Administrator"]),
+    authStaffController.handleAddStaff,
+);
 
 // reset password routes
 router.post("/forgot-password", authStaffController.handleSendResetPassMail);

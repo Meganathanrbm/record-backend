@@ -42,6 +42,7 @@ module.exports = {
     STAFF_CREATED_SUCCESSFULLY: "Staff created successfully!",
     STAFF_CREATED_FAILED: "Staff created failed!",
     STAFFS_REQUIRED: "Staffs are required!",
+    INVALID_ROLE_FOR_DEPARTMENT: "Invalid Role for the department",
 
     // Admin messages
     ADMIN_NOT_FOUND: "Admin Not Found!",

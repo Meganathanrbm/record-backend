@@ -9,7 +9,7 @@ const staffSchema = new mongoose.Schema({
     departmentId: { type: String, required: false },
     role: {
         type: String,
-        enum: ["admin", "staff"],
+        enum: ["Administrator", "Staff"],
         required: true,
     },
     fullName: {
@@ -18,11 +18,11 @@ const staffSchema = new mongoose.Schema({
     },
     designation: {
         type: String,
-        required: true,
+        required: false,
     },
     mobile: {
         type: String,
-        required: true,
+        required: false,
     },
     email: {
         type: String,
