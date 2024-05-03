@@ -10,7 +10,7 @@ const ErrorLogConstant = require("../constants/error-log.constant");
 const generateUUID = require("../helpers/uuid.helper");
 
 // Importing Models
-const Instituion = require("../models/institution.model");
+const Institution = require("../models/institution.model");
 
 exports.handleAddInstitution = async (req, res) => {
     try {
@@ -19,31 +19,31 @@ exports.handleAddInstitution = async (req, res) => {
 
         // Do joi validations
 
-        const checkInstituionExists = await Instituion.findOne({ name });
+        const checkInstitutionExists = await Institution.findOne({ name });
 
-        if (checkInstituionExists) {
+        if (checkInstitutionExists) {
             return res.status(HttpStatusCode.Conflict).json({
                 status: HttpStatusConstant.CONFLICT,
                 code: HttpStatusCode.Conflict,
-                message: ResponseMessageConstant.INSTITUION_ALREADY_EXISTS,
+                message: ResponseMessageConstant.INSTITUTION_ALREADY_EXISTS,
             });
         }
 
-        const instituionId = generateUUID();
+        const institutionId = generateUUID();
 
-        const instituion = await Instituion.create({
-            instituionId,
+        const institution = await Institution.create({
+            institutionId,
             ...req.body,
         });
 
         return res.status(HttpStatusCode.Created).json({
             status: HttpStatusConstant.CREATED,
             code: HttpStatusCode.Created,
-            data: instituion,
+            data: institution,
         });
     } catch (error) {
         console.log(
-            ErrorLogConstant.instituionController.handleAddInstituionErrorLog,
+            ErrorLogConstant.institutionController.handleAddInstitutionErrorLog,
             error.message,
         );
         res.status(HttpStatusCode.InternalServerError).json({
@@ -55,26 +55,26 @@ exports.handleAddInstitution = async (req, res) => {
 
 exports.handleGetInstitution = async (req, res) => {
     try {
-        const { instituionId } = req.params;
+        const { institutionId } = req.params;
 
-        const instituion = await Instituion.findOne({ instituionId });
+        const institution = await Institution.findOne({ institutionId });
 
-        if (!instituion) {
+        if (!institution) {
             return res.status(HttpStatusCode.NotFound).json({
                 status: HttpStatusConstant.NOT_FOUND,
                 code: HttpStatusCode.NotFound,
-                message: ResponseMessageConstant.INSTITUION_NOT_FOUND,
+                message: ResponseMessageConstant.INSTITUTION_NOT_FOUND,
             });
         }
 
         return res.status(HttpStatusCode.Ok).json({
             status: HttpStatusConstant.OK,
             code: HttpStatusCode.Ok,
-            data: instituion,
+            data: institution,
         });
     } catch (error) {
         console.log(
-            ErrorLogConstant.instituionController.handleAddInstituionErrorLog,
+            ErrorLogConstant.institutionController.handleGetInstitutionErrorLog,
             error.message,
         );
         res.status(HttpStatusCode.InternalServerError).json({
@@ -86,38 +86,38 @@ exports.handleGetInstitution = async (req, res) => {
 
 exports.handleUpdateInstiution = async (req, res) => {
     try {
-        const { instituionId } = req.params;
+        const { institutionId } = req.params;
 
-        const instituion = await Instituion.findOne({ instituionId });
+        const institution = await Institution.findOne({ institutionId });
 
-        if (!instituion) {
+        if (!institution) {
             return res.status(HttpStatusCode.NotFound).json({
                 status: HttpStatusConstant.NOT_FOUND,
                 code: HttpStatusCode.NotFound,
-                message: ResponseMessageConstant.INSTITUION_NOT_FOUND,
+                message: ResponseMessageConstant.INSTITUTION_NOT_FOUND,
             });
         }
 
         const { name, type, mobile, email, about } = req.body;
 
-        instituion.name = name;
-        instituion.type = type;
-        instituion.mobile = mobile;
-        instituion.email = email;
-        instituion.about = about;
+        institution.name = name;
+        institution.type = type;
+        institution.mobile = mobile;
+        institution.email = email;
+        institution.about = about;
 
-        await instituion.save();
+        await institution.save();
 
         res.status(HttpStatusCode.Ok).json({
             status: HttpStatusConstant.SUCCESS,
             code: HttpStatusCode.Ok,
-            message: ResponseMessageConstant.INSTITUION_UPDATED_SUCCESSFULLY,
-            profile: instituion,
+            message: ResponseMessageConstant.INSTITUTION_UPDATED_SUCCESSFULLY,
+            profile: institution,
         });
     } catch (error) {
         console.log(
-            ErrorLogConstant.instituionController
-                .handleUpdateInstituionErrorLog,
+            ErrorLogConstant.institutionController
+                .handleUpdateInstitutionErrorLog,
             error.message,
         );
         res.status(HttpStatusCode.InternalServerError).json({

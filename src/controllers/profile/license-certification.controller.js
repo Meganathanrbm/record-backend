@@ -4,6 +4,7 @@ const Joi = require("joi");
 const LicenseCertification = require("../../models/profile/license-certification.model");
 const User = require("../../models/user.model");
 const Profile_Verification = require("../../models/profile_verification.model");
+const Skill = require("../../models/skill.model");
 
 // Importing Constants
 const HttpStatusConstant = require("../../constants/http-message.constant");
@@ -48,6 +49,25 @@ exports.handleAddLicenseCertification = async (req, res) => {
                 status: HttpStatusConstant.NOT_FOUND,
                 code: HttpStatusCode.NotFound,
                 message: ResponseMessageConstant.USER_NOT_FOUND,
+            });
+        }
+
+        const skillIds = req.body.skills.map((skill) => skill.skillId);
+
+        const skillsExist = await Promise.all(
+            skillIds.map(async (skillId) => {
+                const existingSkill = await Skill.findOne({ skillId });
+                return !!existingSkill;
+            }),
+        );
+
+        const allSkillsExist = skillsExist.every((exists) => exists);
+
+        if (!allSkillsExist) {
+            return res.status(HttpStatusCode.BadRequest).json({
+                status: HttpStatusConstant.BAD_REQUEST,
+                code: HttpStatusCode.BadRequest,
+                message: ResponseMessageConstant.INVALID_SKILLS,
             });
         }
 
@@ -150,6 +170,25 @@ exports.handleUpdateLicenseCertification = async (req, res) => {
                 code: HttpStatusCode.NotFound,
                 message:
                     ResponseMessageConstant.LICENSE_CERTIFICATION_NOT_FOUND,
+            });
+        }
+
+        const skillIds = req.body.skills.map((skill) => skill.skillId);
+
+        const skillsExist = await Promise.all(
+            skillIds.map(async (skillId) => {
+                const existingSkill = await Skill.findOne({ skillId });
+                return !!existingSkill;
+            }),
+        );
+
+        const allSkillsExist = skillsExist.every((exists) => exists);
+
+        if (!allSkillsExist) {
+            return res.status(HttpStatusCode.BadRequest).json({
+                status: HttpStatusConstant.BAD_REQUEST,
+                code: HttpStatusCode.BadRequest,
+                message: ResponseMessageConstant.INVALID_SKILLS,
             });
         }
 

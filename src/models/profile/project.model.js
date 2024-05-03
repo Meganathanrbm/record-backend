@@ -15,7 +15,7 @@ const projectSchema = new mongoose.Schema(
         verificationId: { type: String, required: false },
         skills: [
             {
-                name: { type: String, required: true },
+                skillId: { type: String, required: true },
                 verified: { type: Boolean, default: false },
                 endorsedBy: String,
                 endorsedAt: Date,

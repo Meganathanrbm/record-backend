@@ -6,9 +6,9 @@ const departmentController = require("../controllers/department.controller");
 
 // Check if only admin
 
-router.post("/:instituionId", departmentController.handleAddDepartment);
+router.post("/:institutionId", departmentController.handleAddDepartment);
 router.get("/:departmentId", departmentController.handleGetDepartment);
-router.get("/all/:instituionId", departmentController.handleGetAllDepartment);
+router.get("/all/:institutionId", departmentController.handleGetAllDepartment);
 router.put("/:departmentId", departmentController.handleUpdateDepartment);
 
 module.exports = router;

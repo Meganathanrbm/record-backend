@@ -4,6 +4,7 @@ const Joi = require("joi");
 const Project = require("../../models/profile/project.model");
 const User = require("../../models/user.model");
 const Profile_Verification = require("../../models/profile_verification.model");
+const Skill = require("../../models/skill.model");
 
 // Importing Constants
 const HttpStatusConstant = require("../../constants/http-message.constant");
@@ -48,6 +49,25 @@ exports.handleAddProject = async (req, res) => {
                 status: HttpStatusConstant.NOT_FOUND,
                 code: HttpStatusCode.NotFound,
                 message: ResponseMessageConstant.USER_NOT_FOUND,
+            });
+        }
+
+        const skillIds = req.body.skills.map((skill) => skill.skillId);
+
+        const skillsExist = await Promise.all(
+            skillIds.map(async (skillId) => {
+                const existingSkill = await Skill.findOne({ skillId });
+                return !!existingSkill;
+            }),
+        );
+
+        const allSkillsExist = skillsExist.every((exists) => exists);
+
+        if (!allSkillsExist) {
+            return res.status(HttpStatusCode.BadRequest).json({
+                status: HttpStatusConstant.BAD_REQUEST,
+                code: HttpStatusCode.BadRequest,
+                message: ResponseMessageConstant.INVALID_SKILLS,
             });
         }
 
@@ -107,7 +127,7 @@ exports.handleAddProject = async (req, res) => {
             return res.status(HttpStatusCode.Ok).json({
                 status: HttpStatusConstant.OK,
                 code: HttpStatusCode.Ok,
-                message: ResponseMessageConstant.PROJECT_UPDATED_SUCCESSFULLY,
+                message: ResponseMessageConstant.PROJECT_ADDED_SUCCESSFULLY,
                 data: userProfile,
             });
         }
@@ -145,6 +165,25 @@ exports.handleUpdateProject = async (req, res) => {
                 status: HttpStatusConstant.NOT_FOUND,
                 code: HttpStatusCode.NotFound,
                 message: ResponseMessageConstant.PROJECT_NOT_FOUND,
+            });
+        }
+
+        const skillIds = req.body.skills.map((skill) => skill.skillId);
+
+        const skillsExist = await Promise.all(
+            skillIds.map(async (skillId) => {
+                const existingSkill = await Skill.findOne({ skillId });
+                return !!existingSkill;
+            }),
+        );
+
+        const allSkillsExist = skillsExist.every((exists) => exists);
+
+        if (!allSkillsExist) {
+            return res.status(HttpStatusCode.BadRequest).json({
+                status: HttpStatusConstant.BAD_REQUEST,
+                code: HttpStatusCode.BadRequest,
+                message: ResponseMessageConstant.INVALID_SKILLS,
             });
         }
 

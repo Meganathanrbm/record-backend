@@ -6,6 +6,8 @@ const User = require("../models/user.model");
 const jwtToken = require("../models/jwt-token.model");
 const verificationToken = require("../models/verification-token.model");
 const PasswordResetToken = require("../models/password-reset-token.model");
+const Institution = require("../models/institution.model");
+const Department = require("../models/department.model");
 
 // Importing Constants
 const HttpStatusConstant = require("../constants/http-message.constant");
@@ -24,9 +26,12 @@ const handleSendEmail = require("./email.controller");
 
 exports.handleRegister = async (req, res) => {
     try {
-        const { username, email, password } = req.body;
+        const { institutionId, departmentId, username, email, password } =
+            req.body;
 
         const userValidation = Joi.object({
+            institutionId: Joi.string().required(),
+            departmentId: Joi.string().required(),
             username: Joi.string().required(),
             email: Joi.string().email().required(),
             password: Joi.string().required(),
@@ -39,6 +44,26 @@ exports.handleRegister = async (req, res) => {
                 status: HttpStatusConstant.BAD_REQUEST,
                 code: HttpStatusCode.BadRequest,
                 message: error.details[0].message.replace(/"/g, ""),
+            });
+        }
+
+        const institution = await Institution.findOne({ institutionId });
+
+        if (!institution) {
+            return res.status(HttpStatusCode.NotFound).json({
+                status: HttpStatusConstant.NOT_FOUND,
+                code: HttpStatusCode.NotFound,
+                message: ResponseMessageConstant.INSTITUTION_NOT_FOUND,
+            });
+        }
+
+        const department = await Department.findOne({ departmentId });
+
+        if (!department) {
+            return res.status(HttpStatusCode.NotFound).json({
+                status: HttpStatusConstant.NOT_FOUND,
+                code: HttpStatusCode.NotFound,
+                message: ResponseMessageConstant.DEPARTMENT_NOT_FOUND,
             });
         }
 
@@ -55,30 +80,16 @@ exports.handleRegister = async (req, res) => {
             const generatedUserId = generateUUID();
             await User.create({
                 userId: generatedUserId,
+                institutionId,
+                departmentId,
                 username,
                 email,
                 password: encryptedPassword,
             });
-            const generatedAccessToken = await signToken({
-                userId: generatedUserId,
-                username,
-                email,
+            res.status(HttpStatusCode.Created).json({
+                status: HttpStatusConstant.CREATED,
+                code: HttpStatusCode.Created,
             });
-            res.cookie(
-                CommonConstant.signatureCookieName,
-                generatedAccessToken,
-                {
-                    maxAge: 3600000,
-                    httpOnly: false,
-                    secure: true,
-                    sameSite: "none",
-                },
-            )
-                .status(HttpStatusCode.Created)
-                .json({
-                    status: HttpStatusConstant.CREATED,
-                    code: HttpStatusCode.Created,
-                });
         }
     } catch (error) {
         console.log(
@@ -134,6 +145,10 @@ exports.handleLogin = async (req, res) => {
                     username,
                     email,
                 });
+                if (user.isActive == false) {
+                    user.isActive = true;
+                    user.save();
+                }
                 res.cookie(
                     CommonConstant.signatureCookieName,
                     generatedAccessToken,
@@ -352,13 +367,13 @@ exports.handleSendVerificationEmail = async (req, res) => {
 
 exports.handleVerifyEmail = async (req, res) => {
     try {
-        const { verification_token } = req.body;
+        const { verification_token } = req.params;
 
         const userValidation = Joi.object({
             verification_token: Joi.string().required(),
         });
 
-        const { error } = userValidation.validate(req.body);
+        const { error } = userValidation.validate(req.params);
         if (error) {
             return res.status(HttpStatusCode.BadRequest).json({
                 status: HttpStatusConstant.BAD_REQUEST,

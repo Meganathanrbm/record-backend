@@ -10,6 +10,7 @@ const ErrorLogConstant = require("../constants/error-log.constant");
 
 // Importing Models
 const User = require("../models/user.model");
+const Skill = require("../models/skill.model");
 
 // Importing Helpers
 const generateUUID = require("../helpers/uuid.helper");
@@ -161,23 +162,41 @@ exports.handleOnBoarding = async (req, res) => {
                 message: ResponseMessageConstant.USER_NOT_FOUND,
             });
         } else {
-            await User.findOneAndUpdate(
-                {
-                    userId,
-                },
-                {
-                    $set: {
-                        interestBasedSkills: req.body,
-                        isOnBoardingCompleted: true,
-                    },
-                },
+            const skillIds = req.body;
+
+            const skillsExist = await Promise.all(
+                skillIds.map(async (skillId) => {
+                    const existingSkill = await Skill.findOne({ skillId });
+                    return !!existingSkill;
+                }),
             );
 
-            res.status(HttpStatusCode.Ok).json({
-                status: HttpStatusConstant.OK,
-                code: HttpStatusCode.Ok,
-                message: ResponseMessageConstant.USER_UPDATED_SUCCESSFULLY,
-            });
+            const allSkillsExist = skillsExist.every((exists) => exists);
+
+            if (allSkillsExist) {
+                await User.findOneAndUpdate(
+                    {
+                        userId,
+                    },
+                    {
+                        $set: {
+                            interestBasedSkills: req.body,
+                            isOnBoardingCompleted: true,
+                        },
+                    },
+                );
+                return res.status(HttpStatusCode.Ok).json({
+                    status: HttpStatusConstant.OK,
+                    code: HttpStatusCode.Ok,
+                    message: ResponseMessageConstant.USER_UPDATED_SUCCESSFULLY,
+                });
+            } else {
+                return res.status(HttpStatusCode.BadRequest).json({
+                    status: HttpStatusConstant.BAD_REQUEST,
+                    code: HttpStatusCode.BadRequest,
+                    message: ResponseMessageConstant.INVALID_SKILLS,
+                });
+            }
         }
     } catch (error) {
         console.log(

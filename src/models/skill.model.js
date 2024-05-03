@@ -18,10 +18,6 @@ const skillSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        imageKey: {
-            type: String,
-            required: false,
-        },
     },
     { timestamps: true },
 );

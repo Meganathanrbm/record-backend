@@ -3,9 +3,11 @@ const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema(
     {
         userId: { type: String, required: true },
+        institutionId: { type: String, required: true },
+        departmentId: { type: String, required: true },
         username: { type: String, required: true },
         email: { type: String, required: true },
-        password: { type: String, required: false },
+        password: { type: String, required: true },
         isActive: { type: Boolean, default: false },
         fullName: { type: String, required: false },
         profilePicture: { type: String, required: false },
@@ -23,9 +25,12 @@ const userSchema = new mongoose.Schema(
         },
         isUsernameUpdated: { type: Boolean, default: false },
         isOnBoardingCompleted: { type: Boolean, default: false },
-        interestBasedSkills: { type: Array, default: [] },
+        interestBasedSkills: [
+            {
+                skillId: { type: String, required: true },
+            },
+        ],
         isEmailVerified: { type: Boolean, default: false },
-        lastLogin: { type: Date },
         goalType: {
             type: String,
             enum: ["monthly", "yearly"],

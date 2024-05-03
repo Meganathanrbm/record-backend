@@ -10,20 +10,20 @@ const ErrorLogConstant = require("../constants/error-log.constant");
 const generateUUID = require("../helpers/uuid.helper");
 
 // Importing Models
-const Instituion = require("../models/institution.model");
+const Institution = require("../models/institution.model");
 const Department = require("../models/department.model");
 
 exports.handleAddDepartment = async (req, res) => {
     try {
-        const { instituionId } = req.params;
+        const { institutionId } = req.params;
 
-        const instituion = await Instituion.findOne({ instituionId });
+        const institution = await Institution.findOne({ institutionId });
 
-        if (!instituion) {
+        if (!institution) {
             return res.status(HttpStatusCode.NotFound).json({
                 status: HttpStatusConstant.NOT_FOUND,
                 code: HttpStatusCode.NotFound,
-                message: ResponseMessageConstant.INSTITUION_NOT_FOUND,
+                message: ResponseMessageConstant.INSTITUTION_NOT_FOUND,
             });
         }
 
@@ -42,7 +42,7 @@ exports.handleAddDepartment = async (req, res) => {
         const departmentId = generateUUID();
 
         const department = await Department.create({
-            instituionId,
+            institutionId,
             departmentId,
             ...req.body,
         });
@@ -97,19 +97,19 @@ exports.handleGetDepartment = async (req, res) => {
 
 exports.handleGetAllDepartment = async (req, res) => {
     try {
-        const { instituionId } = req.params;
+        const { institutionId } = req.params;
 
-        const instituion = await Instituion.findOne({ instituionId });
+        const institution = await Institution.findOne({ institutionId });
 
-        if (!instituion) {
+        if (!institution) {
             return res.status(HttpStatusCode.NotFound).json({
                 status: HttpStatusConstant.NOT_FOUND,
                 code: HttpStatusCode.NotFound,
-                message: ResponseMessageConstant.INSTITUION_NOT_FOUND,
+                message: ResponseMessageConstant.INSTITUTION_NOT_FOUND,
             });
         }
 
-        const departments = await Department.find({ instituionId });
+        const departments = await Department.find({ institutionId });
 
         return res.status(HttpStatusCode.Ok).json({
             status: HttpStatusConstant.OK,

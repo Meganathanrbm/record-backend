@@ -7,7 +7,7 @@ const institutionController = require("../controllers/institution.controller");
 // Check if only admin
 
 router.post("/", institutionController.handleAddInstitution);
-router.get("/:instituionId", institutionController.handleGetInstitution);
-router.put("/:instituionId", institutionController.handleUpdateInstiution);
+router.get("/:institutionId", institutionController.handleGetInstitution);
+router.put("/:institutionId", institutionController.handleUpdateInstiution);
 
 module.exports = router;

@@ -16,9 +16,9 @@ module.exports = {
     USER_UPDATED_SUCCESSFULLY: "User updated successfully!",
 
     // Instituion messages
-    INSTITUION_ALREADY_EXISTS: "Institution already exist!",
-    INSTITUION_NOT_FOUND: "Institution Not Found!",
-    INSTITUION_UPDATED_SUCCESSFULLY: "Institution updated successfully!",
+    INSTITUTION_ALREADY_EXISTS: "Institution already exist!",
+    INSTITUTION_NOT_FOUND: "Institution Not Found!",
+    INSTITUTION_UPDATED_SUCCESSFULLY: "Institution updated successfully!",
 
     // Department messages
     DEPARTMENT_ALREADY_EXISTS: "Department already exist!",
@@ -81,6 +81,7 @@ module.exports = {
     SKILL_CATEGORY_NOT_FOUND: "Skill category not found!",
     SKILL_CATEGORY_ID_REQUIRED: "Skill category id is required!",
     SKILL_CATEGORY_UPDATED_SUCCESSFULLY: "Skill category updated successfully!",
+    INVALID_SKILLS: "Invalid Skills!",
 
     // Profile Messages
     PROFILE_UPDATED_SUCCESSFULLY: "Profile updated successfully!",

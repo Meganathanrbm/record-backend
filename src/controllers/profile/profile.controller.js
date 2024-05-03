@@ -2,6 +2,8 @@ const Joi = require("joi");
 
 // Importing models
 const User = require("../../models/user.model");
+const Skill = require("../../models/skill.model");
+const SkillCategory = require("../../models/skill-category.model");
 
 // Importing Constants
 const HttpStatusConstant = require("../../constants/http-message.constant");
@@ -9,17 +11,54 @@ const HttpStatusCode = require("../../constants/http-code.constant");
 const ResponseMessageConstant = require("../../constants/response-message.constant");
 const ErrorLogConstant = require("../../constants/error-log.constant");
 
+const appendSkillsDetails = async (items) => {
+    for (let item of items) {
+        if (item.skills && item.skills.length > 0) {
+            for (let skill of item.skills) {
+                try {
+                    const skillDetails = await Skill.findOne({
+                        skillId: skill.skillId,
+                    });
+                    if (skillDetails) {
+                        skill.skillName = skillDetails.skillName;
+                        skill.imageUrl = skillDetails.imageUrl;
+                        skill.skillCategoryId = skillDetails.skillCategoryId;
+                    }
+                } catch (error) {
+                    console.error("Error while fetching skill details:", error);
+                }
+            }
+        }
+    }
+    return items;
+};
+
+const appendInteresetBasedSkillsDetails = async (skillIds) => {
+    const skillDetailsPromises = skillIds.map(async (skillId) => {
+        try {
+            const skillDetails = await Skill.findOne({ skillId });
+            if (skillDetails) {
+                return {
+                    skillId: skillId,
+                    skillName: skillDetails.skillName,
+                    imageUrl: skillDetails.imageUrl,
+                    skillCategoryId: skillDetails.skillCategoryId,
+                };
+            } else {
+                return null;
+            }
+        } catch (error) {
+            console.error("Error while fetching skill details:", error);
+            return null;
+        }
+    });
+    const skillDetailsArray = await Promise.all(skillDetailsPromises);
+    return skillDetailsArray.filter((skill) => skill !== null);
+};
+
 exports.handleGetUserProfileInfo = async (req, res) => {
     try {
-        const { userId } = req.params;
-
-        if (!userId) {
-            return res.status(HttpStatusCode.BadRequest).json({
-                status: HttpStatusConstant.BAD_REQUEST,
-                code: HttpStatusCode.BadRequest,
-                message: ResponseMessageConstant.USER_ID_REQUIRED,
-            });
-        }
+        const { userId } = req.userSession;
 
         const checkIsUserExists = await User.exists({
             userId,
@@ -123,9 +162,37 @@ exports.handleGetUserProfileInfo = async (req, res) => {
                 },
             ]);
 
+            userProfileInfoResponse[0].interestBasedSkills =
+                await appendInteresetBasedSkillsDetails(
+                    userProfileInfoResponse[0].interestBasedSkills,
+                );
+
+            userProfileInfoResponse[0].workexperiences =
+                await appendSkillsDetails(
+                    userProfileInfoResponse[0].workexperiences,
+                );
+            userProfileInfoResponse[0].licensecertifications =
+                await appendSkillsDetails(
+                    userProfileInfoResponse[0].licensecertifications,
+                );
+            userProfileInfoResponse[0].projects = await appendSkillsDetails(
+                userProfileInfoResponse[0].projects,
+            );
+
+            let skillCategoryCounts = {};
+
             let interestBasedSkills = {};
             userProfileInfoResponse[0].interestBasedSkills.forEach((skill) => {
-                interestBasedSkills[skill] = { skill: skill, endorsedCount: 0 };
+                interestBasedSkills[skill.skillName] = {
+                    skillName: skill.skillName,
+                    skillId: skill.skillId,
+                    endorsedCount: 0,
+                };
+                // const skillCategoryId = skill.skillCategoryId;
+                // if (!skillCategoryCounts.hasOwnProperty(skillCategoryId)) {
+                //     skillCategoryCounts[skillCategoryId] = 0;
+                // }
+                // skillCategoryCounts[skillCategoryId]++;
             });
 
             const workExperiences = userProfileInfoResponse[0].workexperiences;
@@ -138,27 +205,38 @@ exports.handleGetUserProfileInfo = async (req, res) => {
             const extractSkillsAndCountEndorsements = (array) => {
                 array.forEach((item) => {
                     item.skills.forEach((skill) => {
-                        const { name, endorsedBy } = skill;
-                        if (interestBasedSkills.hasOwnProperty(name)) {
+                        const { skillName, endorsedBy } = skill;
+                        const skillCategoryId = skill.skillCategoryId;
+                        if (
+                            !skillCategoryCounts.hasOwnProperty(skillCategoryId)
+                        ) {
+                            skillCategoryCounts[skillCategoryId] = 0;
+                        }
+                        skillCategoryCounts[skillCategoryId]++;
+                        if (interestBasedSkills.hasOwnProperty(skillName)) {
                             if (endorsedBy) {
-                                interestBasedSkills[name].endorsedCount++;
+                                interestBasedSkills[skillName].endorsedCount++;
                             }
                         } else {
-                            if (!roleBasedSkills.hasOwnProperty(name)) {
-                                roleBasedSkills[name] = {
-                                    skill: name,
+                            if (!roleBasedSkills.hasOwnProperty(skillName)) {
+                                roleBasedSkills[skillName] = {
+                                    skill: skillName,
+                                    skillId: skill.skillId,
                                     endorsedCount: 0,
                                 };
                             }
                             if (endorsedBy) {
-                                roleBasedSkills[name].endorsedCount++;
+                                roleBasedSkills[skillName].endorsedCount++;
                             }
                         }
                     });
                 });
             };
 
-            extractSkillsAndCountEndorsements(workExperiences);
+            extractSkillsAndCountEndorsements(
+                workExperiences,
+                interestBasedSkills,
+            );
             extractSkillsAndCountEndorsements(licenseCertifications);
             extractSkillsAndCountEndorsements(projects);
 
@@ -173,9 +251,42 @@ exports.handleGetUserProfileInfo = async (req, res) => {
             interestBasedSkills = sortSkillsByEndorsement(interestBasedSkills);
             roleBasedSkills = sortSkillsByEndorsement(roleBasedSkills);
 
+            const allSkillCategories = await SkillCategory.find({});
+
+            const skillCategoryNameMap = {};
+            allSkillCategories.forEach((category) => {
+                skillCategoryNameMap[category.skillCategoryId] =
+                    category.categoryName;
+            });
+
+            let totalCount = 0;
+            for (item in skillCategoryCounts) {
+                totalCount += skillCategoryCounts[item];
+            }
+
+            for (item in skillCategoryCounts) {
+                const percentage =
+                    (skillCategoryCounts[item] / totalCount) * 100;
+                skillCategoryCounts[item] = percentage.toFixed(2);
+            }
+
+            const skillCategoryCountsWithName = {};
+            Object.keys(skillCategoryCounts).forEach((categoryId) => {
+                const categoryName = skillCategoryNameMap[categoryId];
+                if (categoryName) {
+                    skillCategoryCountsWithName[categoryName] =
+                        skillCategoryCounts[categoryId];
+                }
+            });
+
             const skillRepository = {
-                interestBasedSkills: interestBasedSkills,
+                skillBadges: {
+                    roleBasedCount: Object.keys(roleBasedSkills).length,
+                    interestBasedCount: Object.keys(interestBasedSkills).length,
+                },
+                percentages: skillCategoryCountsWithName,
                 roleBasedSkills: roleBasedSkills,
+                interestBasedSkills: interestBasedSkills,
             };
 
             userProfileInfoResponse[0].skillRepository = skillRepository;
@@ -190,7 +301,7 @@ exports.handleGetUserProfileInfo = async (req, res) => {
         }
     } catch (error) {
         console.log(
-            ErrorLogConstant.userController.handleUpdateUsernameErrorLog,
+            ErrorLogConstant.userController.handleGetUserProfileInfoErrorLog,
             error.message,
         );
         res.status(HttpStatusCode.InternalServerError).json({

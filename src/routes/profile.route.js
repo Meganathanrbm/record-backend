@@ -9,7 +9,7 @@ const licenseCertificationController = require("../controllers/profile/license-c
 const projectController = require("../controllers/profile/project.controller");
 const activityController = require("../controllers/profile/activity.controller");
 
-router.get("/:userId", profileController.handleGetUserProfileInfo);
+router.get("/", profileController.handleGetUserProfileInfo);
 
 router.put("/basic-profile", profileController.handleUpdateBasicProfile);
 
