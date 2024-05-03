@@ -11,7 +11,7 @@ const HttpStatusCode = require("../../constants/http-code.constant");
 const ResponseMessageConstant = require("../../constants/response-message.constant");
 const ErrorLogConstant = require("../../constants/error-log.constant");
 
-const appendSkillsDetails = async (items) => {
+exports.appendSkillsDetails = async (items) => {
     for (let item of items) {
         if (item.skills && item.skills.length > 0) {
             for (let skill of item.skills) {
@@ -33,7 +33,7 @@ const appendSkillsDetails = async (items) => {
     return items;
 };
 
-const appendInteresetBasedSkillsDetails = async (skillIds) => {
+exports.appendInteresetBasedSkillsDetails = async (skillIds) => {
     const skillDetailsPromises = skillIds.map(async (skillId) => {
         try {
             const skillDetails = await Skill.findOne({ skillId });

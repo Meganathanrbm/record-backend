@@ -109,7 +109,7 @@ exports.handleGetUserLearnings = async (req, res) => {
         const goal = {
             goalType: userGoalType,
             goalTarget: userGoalHours,
-            goalDone: userLearningHours / 3600,
+            goalDone: Math.round(userLearningHours / 3600),
             goalDonePercentage: Math.round(
                 (userLearningHours / 3600 / userGoalHours) * 100,
             ),
@@ -200,25 +200,11 @@ exports.handleUpdateCourseProgress = async (req, res) => {
             });
         }
 
-        let totalProgress = 0;
-        let totalDuration = 0;
-
-        for (const video of youtubeCourse.courseProgress) {
-            totalProgress += video.progress;
-            totalDuration += video.duration;
-        }
-
-        if (totalProgress + progress >= totalDuration) {
-            await Youtube_Course.findOneAndUpdate(
-                { authorId: userId, youtubeCourseId: courseId },
-                { $set: { isCompleted: true } },
-                { new: true },
-            );
-        }
-
         const duration = youtubeCourse.courseProgress[progressIndex].duration;
         const courseProgress =
             youtubeCourse.courseProgress[progressIndex].progress;
+
+        let updatedCourse;
 
         if (courseProgress + progress >= duration) {
             updatedCourse = await Youtube_Course.findOneAndUpdate(
@@ -245,6 +231,22 @@ exports.handleUpdateCourseProgress = async (req, res) => {
                 {
                     $inc: { "courseProgress.$.progress": progress },
                 },
+                { new: true },
+            );
+        }
+
+        let totalProgress = 0;
+        let totalDuration = 0;
+
+        for (const video of updatedCourse.courseProgress) {
+            totalProgress += video.progress;
+            totalDuration += video.duration;
+        }
+
+        if (totalProgress >= totalDuration) {
+            await Youtube_Course.findOneAndUpdate(
+                { authorId: userId, youtubeCourseId: courseId },
+                { $set: { isCompleted: true } },
                 { new: true },
             );
         }

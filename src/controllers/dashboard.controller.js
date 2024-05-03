@@ -3,24 +3,26 @@ const bcrypt = require("bcryptjs");
 
 // Importing Models
 const User = require("../models/user.model");
-const jwtToken = require("../models/jwt-token.model");
-const verificationToken = require("../models/verification-token.model");
-const PasswordResetToken = require("../models/password-reset-token.model");
+const Daily_Learning = require("../models/daily_learning.model");
+const SkillCategory = require("../models/skill-category.model");
 
 // Importing Constants
 const HttpStatusConstant = require("../constants/http-message.constant");
 const HttpStatusCode = require("../constants/http-code.constant");
 const ResponseMessageConstant = require("../constants/response-message.constant");
-const CommonConstant = require("../constants/common.constant");
 const ErrorLogConstant = require("../constants/error-log.constant");
-
-// Importing Helpers
-const generateUUID = require("../helpers/uuid.helper");
-const { signToken, verifyToken } = require("../helpers/jwt.helper");
-const getRecordSignature = require("../helpers/cookie.helper");
 
 // Importing Controllers
 const youtubeController = require("./youtube.controller");
+
+// Importing Utils
+const { getStartAndEndDate } = require("../utils/date.util");
+
+// Importing Functions
+const {
+    appendSkillsDetails,
+    appendInteresetBasedSkillsDetails,
+} = require("../controllers/profile/profile.controller");
 
 const getSkillRepository = async (userId) => {
     try {
@@ -115,9 +117,31 @@ const getSkillRepository = async (userId) => {
             },
         ]);
 
+        userProfileInfoResponse[0].interestBasedSkills =
+            await appendInteresetBasedSkillsDetails(
+                userProfileInfoResponse[0].interestBasedSkills,
+            );
+
+        userProfileInfoResponse[0].workexperiences = await appendSkillsDetails(
+            userProfileInfoResponse[0].workexperiences,
+        );
+        userProfileInfoResponse[0].licensecertifications =
+            await appendSkillsDetails(
+                userProfileInfoResponse[0].licensecertifications,
+            );
+        userProfileInfoResponse[0].projects = await appendSkillsDetails(
+            userProfileInfoResponse[0].projects,
+        );
+
+        let skillCategoryCounts = {};
+
         let interestBasedSkills = {};
         userProfileInfoResponse[0].interestBasedSkills.forEach((skill) => {
-            interestBasedSkills[skill] = { skill: skill, endorsedCount: 0 };
+            interestBasedSkills[skill.skillName] = {
+                skillName: skill.skillName,
+                skillId: skill.skillId,
+                endorsedCount: 0,
+            };
         });
 
         const workExperiences = userProfileInfoResponse[0].workexperiences;
@@ -130,27 +154,33 @@ const getSkillRepository = async (userId) => {
         const extractSkillsAndCountEndorsements = (array) => {
             array.forEach((item) => {
                 item.skills.forEach((skill) => {
-                    const { name, endorsedBy } = skill;
-                    if (interestBasedSkills.hasOwnProperty(name)) {
+                    const { skillName, endorsedBy } = skill;
+                    const skillCategoryId = skill.skillCategoryId;
+                    if (!skillCategoryCounts.hasOwnProperty(skillCategoryId)) {
+                        skillCategoryCounts[skillCategoryId] = 0;
+                    }
+                    skillCategoryCounts[skillCategoryId]++;
+                    if (interestBasedSkills.hasOwnProperty(skillName)) {
                         if (endorsedBy) {
-                            interestBasedSkills[name].endorsedCount++;
+                            interestBasedSkills[skillName].endorsedCount++;
                         }
                     } else {
-                        if (!roleBasedSkills.hasOwnProperty(name)) {
-                            roleBasedSkills[name] = {
-                                skill: name,
+                        if (!roleBasedSkills.hasOwnProperty(skillName)) {
+                            roleBasedSkills[skillName] = {
+                                skill: skillName,
+                                skillId: skill.skillId,
                                 endorsedCount: 0,
                             };
                         }
                         if (endorsedBy) {
-                            roleBasedSkills[name].endorsedCount++;
+                            roleBasedSkills[skillName].endorsedCount++;
                         }
                     }
                 });
             });
         };
 
-        extractSkillsAndCountEndorsements(workExperiences);
+        extractSkillsAndCountEndorsements(workExperiences, interestBasedSkills);
         extractSkillsAndCountEndorsements(licenseCertifications);
         extractSkillsAndCountEndorsements(projects);
 
@@ -165,9 +195,41 @@ const getSkillRepository = async (userId) => {
         interestBasedSkills = sortSkillsByEndorsement(interestBasedSkills);
         roleBasedSkills = sortSkillsByEndorsement(roleBasedSkills);
 
+        const allSkillCategories = await SkillCategory.find({});
+
+        const skillCategoryNameMap = {};
+        allSkillCategories.forEach((category) => {
+            skillCategoryNameMap[category.skillCategoryId] =
+                category.categoryName;
+        });
+
+        let totalCount = 0;
+        for (item in skillCategoryCounts) {
+            totalCount += skillCategoryCounts[item];
+        }
+
+        for (item in skillCategoryCounts) {
+            const percentage = (skillCategoryCounts[item] / totalCount) * 100;
+            skillCategoryCounts[item] = percentage.toFixed(2);
+        }
+
+        const skillCategoryCountsWithName = {};
+        Object.keys(skillCategoryCounts).forEach((categoryId) => {
+            const categoryName = skillCategoryNameMap[categoryId];
+            if (categoryName) {
+                skillCategoryCountsWithName[categoryName] =
+                    skillCategoryCounts[categoryId];
+            }
+        });
+
         const skillRepository = {
-            interestBasedSkills: interestBasedSkills,
+            skillBadges: {
+                roleBasedCount: Object.keys(roleBasedSkills).length,
+                interestBasedCount: Object.keys(interestBasedSkills).length,
+            },
+            percentages: skillCategoryCountsWithName,
             roleBasedSkills: roleBasedSkills,
+            interestBasedSkills: interestBasedSkills,
         };
 
         return skillRepository;
@@ -176,21 +238,214 @@ const getSkillRepository = async (userId) => {
     }
 };
 
+const getlearningActivites = async (userId) => {
+    try {
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            return `${year}-${month}-${day}`;
+        };
+
+        const startEndDates = getStartAndEndDate(
+            new Date().toISOString().split("T")[0],
+        );
+
+        const monthlyLearning = await Daily_Learning.find({
+            userId: userId,
+            date: {
+                $gte: startEndDates.monthStart,
+                $lte: startEndDates.monthEnd,
+            },
+        });
+
+        const datesArray = [];
+        const currentDate = new Date(startEndDates.monthStart);
+        while (currentDate <= new Date(startEndDates.monthEnd)) {
+            datesArray.push(new Date(currentDate));
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        const formattedDates = datesArray.map((date) => formatDate(date));
+
+        const learningActivitiesByDate = new Map();
+        monthlyLearning.forEach((activity) => {
+            const dateKey = formatDate(activity.date);
+            learningActivitiesByDate.set(dateKey, activity.learned);
+        });
+
+        const learningActivities = formattedDates.map((date) => ({
+            date: date,
+            learned: Math.round(learningActivitiesByDate.get(date) / 3600) || 0,
+        }));
+
+        return learningActivities;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const getMoMPerformance = async (userId) => {
+    try {
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            return `${year}-${month}-${day}`;
+        };
+
+        const currentDate = new Date();
+        const currentMonthStart = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            1,
+        );
+        const currentMonthEnd = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth() + 1,
+            0,
+        );
+
+        const prevMonthStart = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth() - 1,
+            1,
+        );
+        const prevMonthEnd = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            0,
+        );
+
+        const monthlyLearningCurrent = await Daily_Learning.find({
+            userId: userId,
+            date: {
+                $gte: currentMonthStart,
+                $lte: currentMonthEnd,
+            },
+        });
+
+        const monthlyLearningPrev = await Daily_Learning.find({
+            userId: userId,
+            date: {
+                $gte: prevMonthStart,
+                $lte: prevMonthEnd,
+            },
+        });
+
+        const currentMonthTotal = monthlyLearningCurrent.reduce(
+            (total, activity) => total + activity.learned,
+            0,
+        );
+        const prevMonthTotal = monthlyLearningPrev.reduce(
+            (total, activity) => total + activity.learned,
+            0,
+        );
+
+        // const currentMonthLearningHours = Math.round(currentMonthTotal / 3600);
+        // const previosMonthLearningHours = Math.round(prevMonthTotal / 3600);
+        const currentMonthLearningHours = 40;
+        const previosMonthLearningHours = 100;
+
+        if (previosMonthLearningHours == 0 && currentMonthLearningHours == 0)
+            return 0;
+        if (previosMonthLearningHours == 0 && currentMonthLearningHours != 0)
+            return 100;
+        const percentage = Math.round(
+            ((currentMonthLearningHours - previosMonthLearningHours) /
+                previosMonthLearningHours) *
+                100,
+        );
+        return percentage;
+    } catch (error) {
+        throw error;
+    }
+};
+
 exports.handleGetDashboard = async (req, res) => {
     try {
-        // learning goal
-        // learning activites
-        // montly performance
         const { userId } = req.userSession;
+
+        const user = await User.findOne({
+            userId,
+        });
+
+        if (!user) {
+            res.status(HttpStatusCode.NotFound).json({
+                status: HttpStatusConstant.NOT_FOUND,
+                code: HttpStatusCode.NotFound,
+                message: ResponseMessageConstant.USER_NOT_FOUND,
+            });
+        }
 
         const coursesInProgress =
             await youtubeController.handleGetCourseProgress(userId);
 
         const skillRepository = await getSkillRepository(userId);
 
+        const userGoalType = user.goalType;
+        const userGoalHours = user.goalHours;
+
+        const currentDate = new Date().toISOString().split("T")[0];
+        const startEndDates = getStartAndEndDate(currentDate);
+
+        let userLearningHours = 0;
+        if (userGoalType === "week") {
+            const weeklyLearning = await Daily_Learning.find({
+                userId: userId,
+                date: {
+                    $gte: startEndDates.weekStart,
+                    $lte: startEndDates.weekEnd,
+                },
+            });
+            userLearningHours = weeklyLearning.reduce(
+                (total, learning) => total + learning.learned,
+                0,
+            );
+        } else if (userGoalType === "month") {
+            const monthlyLearning = await Daily_Learning.find({
+                userId: userId,
+                date: {
+                    $gte: startEndDates.monthStart,
+                    $lte: startEndDates.monthEnd,
+                },
+            });
+            userLearningHours = monthlyLearning.reduce(
+                (total, learning) => total + learning.learned,
+                0,
+            );
+        } else if (userGoalType === "year") {
+            const yearlyLearning = await Daily_Learning.find({
+                userId: userId,
+                date: {
+                    $gte: startEndDates.yearStart,
+                    $lte: startEndDates.yearEnd,
+                },
+            });
+            userLearningHours = yearlyLearning.reduce(
+                (total, learning) => total + learning.learned,
+                0,
+            );
+        }
+        const goal = {
+            goalType: userGoalType,
+            goalTarget: userGoalHours,
+            goalDone: Math.round(userLearningHours / 3600),
+            goalDonePercentage: Math.round(
+                (userLearningHours / 3600 / userGoalHours) * 100,
+            ),
+        };
+
+        const learningActivities = await getlearningActivites(userId);
+
+        const MoMPerformance = await getMoMPerformance(userId);
+
         const dashboard = {
-            coursesInProgress: coursesInProgress,
+            goal: goal,
             skillRepository: skillRepository,
+            learningActivities: learningActivities,
+            momPercentage: MoMPerformance,
+            coursesInProgress: coursesInProgress,
         };
 
         res.send(dashboard);

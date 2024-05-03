@@ -220,23 +220,32 @@ exports.handleDeleteCourseByCourseId = async (req, res) => {
 exports.handleGetCourseProgress = async (userId) => {
     try {
         const youtubeCourses = await Youtube_Course.find({ authorId: userId });
-        const coursesInProgress = youtubeCourses.map((course) => {
-            let totalDuration = 0;
-            let totalProgress = 0;
-            for (const video of course.courseProgress) {
-                totalDuration += video.duration;
-                totalProgress += video.progress;
-            }
-            const progress = Math.round((totalProgress / totalDuration) * 100);
-            return {
-                _id: course._id,
-                youtubeCourseId: course.youtubeCourseId,
-                authorId: course.authorId,
-                playlistId: course.playlistId,
-                isCompleted: course.isCompleted,
-                courseProgress: progress,
-            };
-        });
+        const coursesInProgress = youtubeCourses
+            .map((course) => {
+                let totalDuration = 0;
+                let totalProgress = 0;
+                for (const video of course.courseProgress) {
+                    totalDuration += video.duration;
+                    totalProgress += video.progress;
+                }
+                const progress = Math.round(
+                    (totalProgress / totalDuration) * 100,
+                );
+                if (totalProgress > 0) {
+                    return {
+                        _id: course._id,
+                        youtubeCourseId: course.youtubeCourseId,
+                        authorId: course.authorId,
+                        playlistId: course.playlistId,
+                        isCompleted: course.isCompleted,
+                        courseProgress: progress,
+                        courseMetaData: course.courseMetaData,
+                    };
+                } else {
+                    return null; // Return null for courses with zero progress
+                }
+            })
+            .filter((course) => course !== null);
         return coursesInProgress;
     } catch (error) {
         console.log(
