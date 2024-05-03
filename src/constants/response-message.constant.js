@@ -15,6 +15,16 @@ module.exports = {
     USERNAME_AVAILABLE: "Username available!",
     USER_UPDATED_SUCCESSFULLY: "User updated successfully!",
 
+    // Instituion messages
+    INSTITUION_ALREADY_EXISTS: "Institution already exist!",
+    INSTITUION_NOT_FOUND: "Institution Not Found!",
+    INSTITUION_UPDATED_SUCCESSFULLY: "Institution updated successfully!",
+
+    // Department messages
+    DEPARTMENT_ALREADY_EXISTS: "Department already exist!",
+    DEPARTMENT_NOT_FOUND: "Department Not Found!",
+    DEPARTMENT_UPDATED_SUCCESSFULLY: "Department updated successfully!",
+
     // Staff messages
     STAFF_NOT_FOUND: "Staff Not Found!",
     STAFF_ALREADY_EXISTS: "Staff already exist!",

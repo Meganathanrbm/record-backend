@@ -87,4 +87,22 @@ module.exports = {
         handleGetDashboardErrorLog:
             "🚀 ~ file: dashboard.controller.js ~ handleGetDashboard ~ err",
     },
+    instituionController: {
+        handleAddInstituionErrorLog:
+            "🚀 ~ file: instituion.controller.js ~ handleAddInstituion ~ err",
+        handleGetInstituionErrorLog:
+            "🚀 ~ file: instituion.controller.js ~ handleGetInstituion ~ err",
+        handleUpdateInstituionErrorLog:
+            "🚀 ~ file: instituion.controller.js ~ handleUpdateInstituion ~ err",
+    },
+    departmentController: {
+        handleAddDepartmentErrorLog:
+            "🚀 ~ file: department.controller.js ~ handleAddDepartment ~ err",
+        handleGetDepartmentErrorLog:
+            "🚀 ~ file: department.controller.js ~ handleGetDepartment ~ err",
+        handleGetAllDepartmentErrorLog:
+            "🚀 ~ file: department.controller.js ~ handleGetAllDepartment ~ err",
+        handleUpdateDepartmentErrorLog:
+            "🚀 ~ file: department.controller.js ~ handleUpdateDepartment ~ err",
+    },
 };
