@@ -11,6 +11,12 @@ const HttpStatusCode = require("../../constants/http-code.constant");
 const ResponseMessageConstant = require("../../constants/response-message.constant");
 const ErrorLogConstant = require("../../constants/error-log.constant");
 
+// Importing Controllers
+const imageController = require("../image.controller");
+
+// Importing Helpers
+const generateUUID = require("../../helpers/uuid.helper");
+
 exports.appendSkillsDetails = async (items) => {
     for (let item of items) {
         if (item.skills && item.skills.length > 0) {
@@ -354,6 +360,72 @@ exports.handleUpdateBasicProfile = async (req, res) => {
             code: HttpStatusCode.Ok,
             message: ResponseMessageConstant.PROFILE_UPDATED_SUCCESSFULLY,
             profile: userProfile,
+        });
+    } catch (error) {
+        console.log(
+            ErrorLogConstant.profileController.handleUpdateBasicProfileErrorLog,
+            error.message,
+        );
+        res.status(HttpStatusCode.InternalServerError).json({
+            status: HttpStatusConstant.ERROR,
+            code: HttpStatusCode.InternalServerError,
+        });
+    }
+};
+
+exports.handleAddUserPicture = async (req, res) => {
+    try {
+        const { userId } = req.userSession;
+
+        const user = await User.findOne({
+            userId,
+        });
+
+        if (!user) {
+            res.status(HttpStatusCode.NotFound).json({
+                status: HttpStatusConstant.NOT_FOUND,
+                code: HttpStatusCode.NotFound,
+                message: ResponseMessageConstant.USER_NOT_FOUND,
+            });
+        }
+
+        if (user.profilePicture) {
+            const parts = user.profilePicture.split("/");
+            const fileName = parts[parts.length - 1];
+            const imageDeleted = await imageController.removeImageFromS3(
+                fileName,
+            );
+            if (!imageDeleted) {
+                return res.status(HttpStatusCode.InternalServerError).json({
+                    status: HttpStatusConstant.ERROR,
+                    code: HttpStatusCode.InternalServerError,
+                    message: ResponseMessageConstant.PROFILE_DELETION_FAILED,
+                });
+            }
+        }
+
+        const imageName = generateUUID();
+
+        const imageUrl = await imageController.uploadImageToS3(
+            imageName,
+            req.file,
+        );
+
+        if (imageUrl == null) {
+            return res.status(HttpStatusCode.InternalServerError).json({
+                status: HttpStatusConstant.ERROR,
+                code: HttpStatusCode.InternalServerError,
+                message: ResponseMessageConstant.IMAGE_UPLOAD_FAILED,
+            });
+        }
+
+        user.profilePicture = imageUrl;
+        await user.save();
+
+        return res.status(HttpStatusCode.Ok).json({
+            status: HttpStatusConstant.SUCCESS,
+            code: HttpStatusCode.Ok,
+            message: ResponseMessageConstant.PROFILE_UPDATED_SUCCESSFULLY,
         });
     } catch (error) {
         console.log(

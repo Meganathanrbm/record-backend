@@ -17,3 +17,18 @@ exports.uploadImageToS3 = async (fileName, file) => {
         return null;
     }
 };
+
+exports.removeImageFromS3 = async (fileName) => {
+    try {
+        const deleteParams = {
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: fileName,
+        };
+
+        await s3Client.deleteObject(deleteParams).promise();
+        return true; // Image removed successfully
+    } catch (error) {
+        console.error("Error removing image from S3:", error);
+        return false; // Failed to remove image
+    }
+};

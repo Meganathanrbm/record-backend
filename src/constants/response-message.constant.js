@@ -98,6 +98,7 @@ module.exports = {
 
     // Profile Messages
     PROFILE_UPDATED_SUCCESSFULLY: "Profile updated successfully!",
+    PROFILE_DELETION_FAILED: "Profile deltion failed successfully!",
     EDUCATION_ADDED_SUCCESSFULLY: "Education added successfully!",
     EDUCATION_NOT_FOUND: "Education not found!",
     EDUCATION_UPDATED_SUCCESSFULLY: "Education updated successfully!",

@@ -62,6 +62,8 @@ module.exports = {
     profileController: {
         handleUpdateBasicProfileErrorLog:
             "🚀 ~ file: profile.controller.js ~ handleUpdateBasicProfile ~ err",
+        handleAddUserPictureErrorLog:
+            "🚀 ~ file: profile.controller.js ~ handleAddUserPicture ~ err",
         handleAddEducationErrorLog:
             "🚀 ~ file: education.controller.js ~ handleAddEducation ~ err",
         handleUpdateEducationErrorLog:

@@ -9,7 +9,16 @@ const licenseCertificationController = require("../controllers/profile/license-c
 const projectController = require("../controllers/profile/project.controller");
 const activityController = require("../controllers/profile/activity.controller");
 
+// Importing Middlewares
+const upload = require("../middlewares/multer.mw");
+
 router.get("/", profileController.handleGetUserProfileInfo);
+
+router.put(
+    "/picture",
+    upload.single("image"),
+    profileController.handleAddUserPicture,
+);
 
 router.put("/basic-profile", profileController.handleUpdateBasicProfile);
 
