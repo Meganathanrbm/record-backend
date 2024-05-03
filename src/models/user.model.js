@@ -25,15 +25,11 @@ const userSchema = new mongoose.Schema(
         },
         isUsernameUpdated: { type: Boolean, default: false },
         isOnBoardingCompleted: { type: Boolean, default: false },
-        interestBasedSkills: [
-            {
-                skillId: { type: String, required: true },
-            },
-        ],
+        interestBasedSkills: { type: Array, default: [] },
         isEmailVerified: { type: Boolean, default: false },
         goalType: {
             type: String,
-            enum: ["monthly", "yearly"],
+            enum: ["week", "month", "year"],
         },
         goalHours: {
             type: Number,

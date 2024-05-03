@@ -18,6 +18,30 @@ const youtubeCourseSchema = new mongoose.Schema(
         courseMetaData: { type: Object, required: true },
         courseContent: { type: Object, required: true },
         courseProgress: { type: Object, required: true },
+        courseNotes: [
+            {
+                videoId: {
+                    type: String,
+                    required: true,
+                },
+                notes: [
+                    {
+                        text: {
+                            type: String,
+                            required: true,
+                        },
+                        time: {
+                            type: Number,
+                            required: true,
+                        },
+                        videoTime: {
+                            type: Number,
+                            required: true,
+                        },
+                    },
+                ],
+            },
+        ],
     },
     { timestamps: true },
 );

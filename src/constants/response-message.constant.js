@@ -45,6 +45,13 @@ module.exports = {
     CONFIG_NOT_FOUND: "Config Not Found!",
     CONFIG_ALREADY_EXIST: "Config already exist!",
 
+    // Course Notes Messages
+    NOTES_ADDED_SUCCESSFULLY: "Notes added successfully!",
+    NOTES_ALREADY_PRESENT: "Notes already present",
+    NOTES_UPDATED_SUCCESSFULLY: "Notes updated successfully!",
+    NOTES_DELETED_SUCCESSFULLY: "Notes deleted successfully!",
+    NOTES_NOT_FOUND: "Notes not found!",
+
     // Email messages
     VERIFICATION_EMAIL_SENT_SUCCESSFULLY:
         "Verification email sent successfully!",
@@ -74,6 +81,9 @@ module.exports = {
     COURSE_PROGRESS_UPDATED_SUCCESSFULLY:
         "Course progress updated successfully!",
     COURSE_VIDEO_NOT_FOUND: "Course video not found!",
+
+    // Goal Messages
+    GOAL_UPDATED_SUCCESSFULLY: "Goal updated successfully!",
 
     // Skill messages
     SKILL_ALREADY_EXISTS: "Skill already exists!",

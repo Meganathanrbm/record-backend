@@ -8,4 +8,10 @@ router.get("/", learningsController.handleGetUserLearnings);
 
 router.put("/progress", learningsController.handleUpdateCourseProgress);
 
+router.put("/goal", learningsController.handleSetLearningGoal);
+
+router.put("/addnotes", learningsController.handleAddNotes);
+router.put("/updatenotes", learningsController.handleUpdateNotes);
+router.delete("/deletenotes", learningsController.handleDeleteNotes);
+
 module.exports = router;
