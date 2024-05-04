@@ -21,7 +21,203 @@ const Job = require("../models/job.model");
 // Importing Controllers
 const handleSendEmail = require("./email.controller");
 
-exports.handleGetPlacementHomePage = async (req, res) => {};
+exports.handleGetPlacementHomePage = async (req, res) => {
+    try {
+        const { staffId } = req.staffSession;
+
+        const staff = await Staff.findOne({ staffId });
+
+        const institutionId = staff.institutionId;
+
+        const institution = await Institution.findOne({ institutionId });
+
+        if (!institution) {
+            return res.status(HttpStatusCode.NotFound).json({
+                status: HttpStatusConstant.NOT_FOUND,
+                code: HttpStatusCode.NotFound,
+                message: ResponseMessageConstant.INSTITUTION_NOT_FOUND,
+            });
+        }
+
+        const jobs = await Job.find({ institutionId });
+
+        const organizationData = {};
+        const jobRoleData = [];
+
+        // Iterate over each job to calculate counts and oldest postedOn date
+        for (const job of jobs) {
+            const {
+                companyName,
+                jobDesignation,
+                appliedCount,
+                hiredCount,
+                postedOn,
+            } = job;
+
+            // If the organization doesn't exist in the organizationData object, initialize it
+            if (!organizationData[companyName]) {
+                organizationData[companyName] = {
+                    totalApplied: appliedCount,
+                    totalHired: hiredCount,
+                    oldestPostedOn: postedOn,
+                };
+            } else {
+                organizationData[companyName].totalApplied += appliedCount;
+                organizationData[companyName].totalHired += hiredCount;
+                if (postedOn < organizationData[companyName].oldestPostedOn) {
+                    organizationData[companyName].oldestPostedOn = postedOn;
+                }
+            }
+            jobRoleData.push({
+                companyName,
+                role: jobDesignation,
+                appliedCount,
+                hiredCount,
+            });
+        }
+
+        const mostHiringOrganisations = Object.entries(organizationData)
+            .map(([companyName, data]) => ({
+                companyName,
+                ...data,
+            }))
+            .sort((a, b) => b.totalHired - a.totalHired);
+
+        const mostHiringRoles = jobRoleData.sort(
+            (a, b) => b.hiredCount - a.hiredCount,
+        );
+
+        return res.status(HttpStatusCode.Ok).json({
+            status: HttpStatusConstant.OK,
+            code: HttpStatusCode.Ok,
+            data: {
+                mostHiringOrganisations,
+                mostHiringRoles,
+            },
+        });
+    } catch (error) {
+        console.log(
+            ErrorLogConstant.placementController
+                .handleGetPlacementHomePageErrorLog,
+            error.message,
+        );
+        res.status(HttpStatusCode.InternalServerError).json({
+            status: HttpStatusConstant.ERROR,
+            code: HttpStatusCode.InternalServerError,
+        });
+    }
+};
+
+exports.handleGetorganisationView = async (req, res) => {
+    try {
+        const { staffId } = req.staffSession;
+
+        const staff = await Staff.findOne({ staffId });
+
+        const institutionId = staff.institutionId;
+
+        const institution = await Institution.findOne({ institutionId });
+
+        if (!institution) {
+            return res.status(HttpStatusCode.NotFound).json({
+                status: HttpStatusConstant.NOT_FOUND,
+                code: HttpStatusCode.NotFound,
+                message: ResponseMessageConstant.INSTITUTION_NOT_FOUND,
+            });
+        }
+
+        const { organisationName } = req.params;
+
+        const jobs = await Job.find({
+            companyName: organisationName,
+            institutionId: institutionId,
+        });
+
+        if (jobs.length == 0) {
+            return res.status(HttpStatusCode.NotFound).json({
+                status: HttpStatusConstant.NOT_FOUND,
+                code: HttpStatusCode.NotFound,
+                message: ResponseMessageConstant.ORGANISATION_NOT_FOUND,
+            });
+        }
+
+        let oldestPostedDate = null;
+        let totalJobsPosted = 0;
+        let totalStudentsHired = 0;
+        let totalStudentsApplied = 0;
+        const jobDesignationCounts = {};
+
+        const jobsWithCounts = [];
+
+        for (const job of jobs) {
+            const jobData = {
+                jobId: job.jobId,
+                jobDesignation: job.jobDesignation,
+                jobLocation: job.jobLocation,
+                postedOn: job.postedOn,
+                appliedCount: job.appliedCount,
+                hiredCount: job.hiredCount,
+            };
+
+            // Update total counts
+            totalJobsPosted++;
+            totalStudentsHired += jobData.hiredCount;
+            totalStudentsApplied += jobData.appliedCount;
+
+            if (
+                !oldestPostedDate ||
+                new Date(job.postedOn) < new Date(oldestPostedDate)
+            ) {
+                oldestPostedDate = job.postedOn;
+            }
+
+            if (job.jobDesignation in jobDesignationCounts) {
+                jobDesignationCounts[job.jobDesignation].appliedCount +=
+                    job.appliedCount;
+                jobDesignationCounts[job.jobDesignation].hiredCount +=
+                    job.hiredCount;
+            } else {
+                jobDesignationCounts[job.jobDesignation] = {
+                    appliedCount: job.appliedCount,
+                    hiredCount: job.hiredCount,
+                };
+            }
+
+            jobsWithCounts.push(jobData);
+        }
+
+        const mostHiringRoles = Object.entries(jobDesignationCounts)
+            .sort(
+                ([, countsA], [, countsB]) =>
+                    countsB.hiredCount - countsA.hiredCount,
+            )
+            .map(([designation, counts]) => ({ designation, ...counts }));
+
+        return res.status(HttpStatusCode.Ok).json({
+            status: HttpStatusConstant.OK,
+            code: HttpStatusCode.Ok,
+            data: {
+                organisationName,
+                oldestPostedDate,
+                totalJobsPosted,
+                totalStudentsHired,
+                totalStudentsApplied,
+                mostHiringRoles,
+                jobsWithCounts,
+            },
+        });
+    } catch (error) {
+        console.log(
+            ErrorLogConstant.placementController
+                .handleGetorganisationViewErrorLog,
+            error.message,
+        );
+        res.status(HttpStatusCode.InternalServerError).json({
+            status: HttpStatusConstant.ERROR,
+            code: HttpStatusCode.InternalServerError,
+        });
+    }
+};
 
 exports.handleCreateJob = async (req, res) => {
     try {
@@ -99,8 +295,8 @@ exports.handleCreateJob = async (req, res) => {
                 const students = await User.find({
                     departmentId: { $in: departments },
                 });
+
                 for (const student of students) {
-                    console.log(student.username, student.email);
                     const isEmailSend = await handleSendEmail({
                         toAddresses: [student.email],
                         source: CommonConstant.email.source.tech_team,
@@ -178,9 +374,25 @@ exports.handleCreateJob = async (req, res) => {
 
 exports.handleGetJob = async (req, res) => {
     try {
+        const { staffId } = req.staffSession;
+
+        const staff = await Staff.findOne({ staffId });
+
+        const institutionId = staff.institutionId;
+
+        const institution = await Institution.findOne({ institutionId });
+
+        if (!institution) {
+            return res.status(HttpStatusCode.NotFound).json({
+                status: HttpStatusConstant.NOT_FOUND,
+                code: HttpStatusCode.NotFound,
+                message: ResponseMessageConstant.INSTITUTION_NOT_FOUND,
+            });
+        }
+
         const { jobId } = req.params;
 
-        const job = await Job.findOne({ jobId }).select(
+        const job = await Job.findOne({ jobId, institutionId }).select(
             "-_id -createdAt -updatedAt -__v -departments",
         );
 

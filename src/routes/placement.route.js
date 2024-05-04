@@ -36,4 +36,18 @@ router.put(
     placementController.handleCloseJob,
 );
 
+router.get(
+    "/organisation/:organisationName",
+    verifyStaff,
+    verifyRole(["Administrator", "Staff"]),
+    placementController.handleGetorganisationView,
+);
+
+router.get(
+    "/home",
+    verifyStaff,
+    verifyRole(["Administrator", "Staff"]),
+    placementController.handleGetPlacementHomePage,
+);
+
 module.exports = router;

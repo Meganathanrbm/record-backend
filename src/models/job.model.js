@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const jobSchema = new mongoose.Schema(
     {
         jobId: { type: String, required: true, unique: true },
-        institutionId: { type: String, required: true, unique: true },
+        institutionId: { type: String, required: true },
         companyName: { type: String, required: true },
         jobDesignation: { type: String, required: true },
         workplaceType: { type: String, required: true },

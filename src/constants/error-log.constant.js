@@ -146,5 +146,9 @@ module.exports = {
             "🚀 ~ file: placement.controller.js ~ handleCreateJob ~ err",
         handleGetJobErrorLog:
             "🚀 ~ file: placement.controller.js ~ handleGetJob ~ err",
+        handleGetorganisationViewErrorLog:
+            "🚀 ~ file: placement.controller.js ~ handleGetorganisationView ~ err",
+        handleGetPlacementHomePageErrorLog:
+            "🚀 ~ file: placement.controller.js ~ handleGetPlacementHomePage ~ err",
     },
 };
