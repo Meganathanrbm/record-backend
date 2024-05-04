@@ -19,6 +19,8 @@ const jobSchema = new mongoose.Schema(
             enum: ["open", "closed"],
             default: "open",
         },
+        appliedCount: { type: Number, default: 0 },
+        hiredCount: { type: Number, default: 0 },
     },
     { timestamps: true },
 );

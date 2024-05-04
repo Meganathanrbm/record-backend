@@ -23,7 +23,7 @@ const handleSendEmail = require("./email.controller");
 
 exports.handleGetPlacementHomePage = async (req, res) => {};
 
-exports.handleCreateJobApplication = async (req, res) => {
+exports.handleCreateJob = async (req, res) => {
     try {
         const { staffId } = req.staffSession;
 
@@ -166,8 +166,7 @@ exports.handleCreateJobApplication = async (req, res) => {
         }
     } catch (error) {
         console.log(
-            ErrorLogConstant.placementController
-                .handleCreateJobApplicationErrorLog,
+            ErrorLogConstant.placementController.handleCreateJobErrorLog,
             error.message,
         );
         res.status(HttpStatusCode.InternalServerError).json({
@@ -219,4 +218,4 @@ exports.handleGetJob = async (req, res) => {
     }
 };
 
-exports.handleCloseJobApplication = async (req, res) => {};
+exports.handleCloseJob = async (req, res) => {};

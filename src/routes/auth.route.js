@@ -10,7 +10,7 @@ const verifyUser = require("../middlewares/user.mw");
 // Manual Auth Routes
 router.post("/register", authController.handleRegister);
 router.post("/login", authController.handleLogin);
-router.post("/logout", authController.handleLogout);
+router.post("/logout", verifyUser, authController.handleLogout);
 
 // Verification routes
 router.post(

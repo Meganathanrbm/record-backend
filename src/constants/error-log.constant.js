@@ -142,8 +142,8 @@ module.exports = {
             "🚀 ~ file: learnings.controller.js ~ handleDeleteNotes ~ err",
     },
     placementController: {
-        handleCreateJobApplicationErrorLog:
-            "🚀 ~ file: placement.controller.js ~ handleCreateJobApplication ~ err",
+        handleCreateJobErrorLog:
+            "🚀 ~ file: placement.controller.js ~ handleCreateJob ~ err",
         handleGetJobErrorLog:
             "🚀 ~ file: placement.controller.js ~ handleGetJob ~ err",
     },

@@ -19,7 +19,7 @@ router.post(
     "/job",
     verifyStaff,
     verifyRole(["Administrator"]),
-    placementController.handleCreateJobApplication,
+    placementController.handleCreateJob,
 );
 
 router.get(
@@ -33,7 +33,7 @@ router.put(
     "/job/close",
     verifyStaff,
     verifyRole(["Administrator"]),
-    placementController.handleCloseJobApplication,
+    placementController.handleCloseJob,
 );
 
 module.exports = router;

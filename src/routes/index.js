@@ -24,7 +24,6 @@ router.use("/authstaff", authstaffRoute);
 // Authorization routes
 router.use("/user", verifyUser, userRoute);
 router.use("/tools", verifyUser, toolsRoute);
-router.use("/dashboard", verifyUser, dashboardRoute);
 router.use("/learnings", verifyUser, learningsRoute);
 router.use("/skill", verifyUser, skillRoute);
 router.use("/skill-category", verifyUser, skillCategoryRoute);
