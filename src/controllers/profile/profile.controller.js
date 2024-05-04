@@ -17,7 +17,7 @@ const imageController = require("../image.controller");
 // Importing Helpers
 const generateUUID = require("../../helpers/uuid.helper");
 
-exports.appendSkillsDetails = async (items) => {
+const appendSkillsDetails = async (items) => {
     for (let item of items) {
         if (item.skills && item.skills.length > 0) {
             for (let skill of item.skills) {
@@ -39,7 +39,9 @@ exports.appendSkillsDetails = async (items) => {
     return items;
 };
 
-exports.appendInteresetBasedSkillsDetails = async (skillIds) => {
+exports.appendSkillsDetails = appendSkillsDetails;
+
+const appendInteresetBasedSkillsDetails = async (skillIds) => {
     const skillDetailsPromises = skillIds.map(async (skillId) => {
         try {
             const skillDetails = await Skill.findOne({ skillId });
@@ -61,6 +63,8 @@ exports.appendInteresetBasedSkillsDetails = async (skillIds) => {
     const skillDetailsArray = await Promise.all(skillDetailsPromises);
     return skillDetailsArray.filter((skill) => skill !== null);
 };
+
+exports.appendInteresetBasedSkillsDetails = appendInteresetBasedSkillsDetails;
 
 exports.handleGetUserProfileInfo = async (req, res) => {
     try {

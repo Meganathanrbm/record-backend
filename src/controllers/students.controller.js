@@ -23,6 +23,7 @@ exports.handleGetStudentProfile = async (req, res) => {
         const { stundetId } = req.params;
 
         const student = await User.findOne({ userId: stundetId });
+
         if (!student) {
             return res.status(HttpStatusCode.NotFound).json({
                 status: HttpStatusConstant.NOT_FOUND,
