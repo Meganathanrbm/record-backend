@@ -44,6 +44,9 @@ module.exports = {
     STAFFS_REQUIRED: "Staffs are required!",
     INVALID_ROLE_FOR_DEPARTMENT: "Invalid Role for the department",
 
+    // Job Messages
+    JOB_NOT_FOUND: "Job not found!",
+
     // Admin messages
     ADMIN_NOT_FOUND: "Admin Not Found!",
     ADMIN_ALREADY_EXISTS: "Admin already exist!",

@@ -14,6 +14,11 @@ const jobSchema = new mongoose.Schema(
         skills: { type: Array, default: [] },
         departments: { type: Array, default: [] },
         postedOn: { type: Date, required: true },
+        status: {
+            type: String,
+            enum: ["open", "closed"],
+            default: "open",
+        },
     },
     { timestamps: true },
 );

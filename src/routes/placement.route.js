@@ -22,6 +22,13 @@ router.post(
     placementController.handleCreateJobApplication,
 );
 
+router.get(
+    "/job/:jobId",
+    verifyStaff,
+    verifyRole(["Administrator", "Staff"]),
+    placementController.handleGetJob,
+);
+
 router.put(
     "/job/close",
     verifyStaff,

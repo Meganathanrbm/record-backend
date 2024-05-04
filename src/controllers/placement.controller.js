@@ -177,4 +177,46 @@ exports.handleCreateJobApplication = async (req, res) => {
     }
 };
 
+exports.handleGetJob = async (req, res) => {
+    try {
+        const { jobId } = req.params;
+
+        const job = await Job.findOne({ jobId }).select(
+            "-_id -createdAt -updatedAt -__v -departments",
+        );
+
+        if (!job) {
+            return res.status(HttpStatusCode.NotFound).json({
+                status: HttpStatusConstant.NOT_FOUND,
+                code: HttpStatusCode.NotFound,
+                message: ResponseMessageConstant.JOB_NOT_FOUND,
+            });
+        }
+
+        const skills = await Skill.find({
+            skillId: { $in: job.skills },
+        }).select("skillName");
+
+        const jobWithSkillNames = {
+            ...job.toObject(),
+            skills: skills.map((skill) => skill.skillName),
+        };
+
+        return res.status(HttpStatusCode.Ok).json({
+            status: HttpStatusConstant.OK,
+            code: HttpStatusCode.Ok,
+            data: jobWithSkillNames,
+        });
+    } catch (error) {
+        console.log(
+            ErrorLogConstant.placementController.handleGetJobErrorLog,
+            error.message,
+        );
+        res.status(HttpStatusCode.InternalServerError).json({
+            status: HttpStatusConstant.ERROR,
+            code: HttpStatusCode.InternalServerError,
+        });
+    }
+};
+
 exports.handleCloseJobApplication = async (req, res) => {};
