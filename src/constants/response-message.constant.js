@@ -70,6 +70,9 @@ module.exports = {
         "Password reset email sent successfully!",
     PASSWORD_RESET_EMAIL_SENT_FAILED: "Password reset email sent failed!",
     PASSWORD_CHANGED_SUCCESSFULLY: "Password changed successfully!",
+    JOB_NOTIFICATION_EMAIL_SENT_SUCCESSFULLY:
+        "Job Notification email sent successfully!",
+    JOB_NOTIFICATION_EMAIL_SENT_FAILED: "Job Notification email sent failed!",
 
     // Verification messages
     VERIFICATION_TOKEN_NOT_FOUND: "Verification token not found!",

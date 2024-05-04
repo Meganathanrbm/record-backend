@@ -10,11 +10,12 @@ const userRoute = require("./user.route");
 const toolsRoute = require("./tools.route");
 const skillRoute = require("./skill.route");
 const skillCategoryRoute = require("./skill-category.route");
-const institutionRoute = require("./institution.route");
 const dashboardRoute = require("./dashboard.route");
 const learningsRoute = require("./learnings.route");
 
 const authstaffRoute = require("./authStaff.route");
+const institutionRoute = require("./institution.route");
+const placementRoute = require("./placement.route");
 
 // Non authorization routes
 router.use("/auth", authRoute);
@@ -31,5 +32,6 @@ router.use("/skill-category", verifyUser, skillCategoryRoute);
 // router.use("/staff",)
 
 router.use("/institution", institutionRoute);
+router.use("/placement", placementRoute);
 
 module.exports = router;

@@ -31,5 +31,9 @@ module.exports = {
             subject: (name, activityName, organisation) =>
                 `Record: Verification of Project of ${name}, ${activityName} ${organisation}`,
         },
+        jobNotification: {
+            subject: (companyName, jobDesignation) =>
+                `Record: ${companyName} is hiring ${jobDesignation}`,
+        },
     },
 };
