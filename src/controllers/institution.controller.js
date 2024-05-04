@@ -11,6 +11,7 @@ const generateUUID = require("../helpers/uuid.helper");
 
 // Importing Models
 const Institution = require("../models/institution.model");
+const Staff = require("../models/staff.model");
 
 exports.handleAddInstitution = async (req, res) => {
     try {
@@ -55,7 +56,11 @@ exports.handleAddInstitution = async (req, res) => {
 
 exports.handleGetInstitution = async (req, res) => {
     try {
-        const { institutionId } = req.params;
+        const { staffId } = req.staffSession;
+
+        const staff = await Staff.findOne({ staffId });
+
+        const institutionId = staff.institutionId;
 
         const institution = await Institution.findOne({ institutionId });
 
@@ -86,7 +91,11 @@ exports.handleGetInstitution = async (req, res) => {
 
 exports.handleUpdateInstiution = async (req, res) => {
     try {
-        const { institutionId } = req.params;
+        const { staffId } = req.staffSession;
+
+        const staff = await Staff.findOne({ staffId });
+
+        const institutionId = staff.institutionId;
 
         const institution = await Institution.findOne({ institutionId });
 

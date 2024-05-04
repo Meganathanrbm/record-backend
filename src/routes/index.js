@@ -11,7 +11,6 @@ const toolsRoute = require("./tools.route");
 const skillRoute = require("./skill.route");
 const skillCategoryRoute = require("./skill-category.route");
 const institutionRoute = require("./institution.route");
-const departmentRoute = require("./department.route");
 const dashboardRoute = require("./dashboard.route");
 const learningsRoute = require("./learnings.route");
 
@@ -32,6 +31,5 @@ router.use("/skill-category", verifyUser, skillCategoryRoute);
 // router.use("/staff",)
 
 router.use("/institution", institutionRoute);
-router.use("/department", departmentRoute);
 
 module.exports = router;

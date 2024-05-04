@@ -10,12 +10,18 @@ const ErrorLogConstant = require("../constants/error-log.constant");
 const generateUUID = require("../helpers/uuid.helper");
 
 // Importing Models
+const User = require("../models/user.model");
 const Institution = require("../models/institution.model");
 const Department = require("../models/department.model");
+const Staff = require("../models/staff.model");
 
 exports.handleAddDepartment = async (req, res) => {
     try {
-        const { institutionId } = req.params;
+        const { staffId } = req.staffSession;
+
+        const staff = await Staff.findOne({ staffId });
+
+        const institutionId = staff.institutionId;
 
         const institution = await Institution.findOne({ institutionId });
 
@@ -97,7 +103,11 @@ exports.handleGetDepartment = async (req, res) => {
 
 exports.handleGetAllDepartment = async (req, res) => {
     try {
-        const { institutionId } = req.params;
+        const { staffId } = req.staffSession;
+
+        const staff = await Staff.findOne({ staffId });
+
+        const institutionId = staff.institutionId;
 
         const institution = await Institution.findOne({ institutionId });
 
@@ -111,10 +121,34 @@ exports.handleGetAllDepartment = async (req, res) => {
 
         const departments = await Department.find({ institutionId });
 
+        const departmentsWithStudentCount = await Promise.all(
+            departments.map(async (department) => {
+                if (department.name === "Administrative") {
+                    return;
+                }
+                const departmentObject = department.toObject();
+                delete departmentObject.createdAt;
+                delete departmentObject.updatedAt;
+                delete departmentObject.__v;
+
+                const studentsCount = await User.countDocuments({
+                    institutionId,
+                    departmentId: departmentObject.departmentId,
+                });
+                departmentObject.totalStudents = studentsCount;
+
+                return departmentObject;
+            }),
+        );
+
+        const filteredDepartments = departmentsWithStudentCount.filter(
+            (department) => department,
+        );
+
         return res.status(HttpStatusCode.Ok).json({
             status: HttpStatusConstant.OK,
             code: HttpStatusCode.Ok,
-            data: departments,
+            data: filteredDepartments,
         });
     } catch (error) {
         console.log(
