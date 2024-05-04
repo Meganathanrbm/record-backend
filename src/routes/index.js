@@ -10,10 +10,10 @@ const userRoute = require("./user.route");
 const toolsRoute = require("./tools.route");
 const skillRoute = require("./skill.route");
 const skillCategoryRoute = require("./skill-category.route");
-const dashboardRoute = require("./dashboard.route");
 const learningsRoute = require("./learnings.route");
 
 const authstaffRoute = require("./authStaff.route");
+const studentsRoute = require("./students.route");
 const institutionRoute = require("./institution.route");
 const placementRoute = require("./placement.route");
 
@@ -29,7 +29,7 @@ router.use("/skill", verifyUser, skillRoute);
 router.use("/skill-category", verifyUser, skillCategoryRoute);
 
 // router.use("/staff",)
-
+router.use("/students", studentsRoute);
 router.use("/institution", institutionRoute);
 router.use("/placement", placementRoute);
 

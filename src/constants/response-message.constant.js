@@ -50,6 +50,9 @@ module.exports = {
     // Organisation Message
     ORGANISATION_NOT_FOUND: "Organisation not found!",
 
+    // Student Message
+    STUDENT_NOT_FOUND: "Student not found!",
+
     // Admin messages
     ADMIN_NOT_FOUND: "Admin Not Found!",
     ADMIN_ALREADY_EXISTS: "Admin already exist!",

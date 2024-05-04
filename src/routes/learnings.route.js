@@ -4,6 +4,8 @@ const router = express.Router();
 // Importing Controllers
 const learningsController = require("../controllers/learnings.controller");
 
+router.get("/", learningsController.handleGetUserLearnings);
+
 router.get("/course/:courseId", learningsController.handleGetCourse);
 
 router.get("/course");
